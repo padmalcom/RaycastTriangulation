@@ -16,6 +16,6 @@ private:
 	static std::vector<EdgeVec2> *createForbiddenLines(std::vector<Vector2> *polygon, std::vector<std::vector<Vector2>*> *holes);
 	static std::vector<PointAndNeighbours*> *createPointsAndNeighbours(std::vector<Vector2> *polygon, std::vector<std::vector<Vector2>*> *holes);
 	static int *sortIndicesClockwise(std::vector<Vector2> *vertices, int a, int b, int c);
-	static bool containsTriangle(std::vector<int> *indices, int a, int b, int c);
+	static bool containsTriangle(std::vector<int> *indices, int a, int b, int c, int cnt);
 };
 

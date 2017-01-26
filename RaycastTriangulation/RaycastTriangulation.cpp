@@ -16,7 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	polygon.push_back(Vector2(10, 10));
 	polygon.push_back(Vector2(0, 10));*/
 
-	for (int i = 0; i < 36000; i += 1) {
+	for (float i = 0; i < 360; i += 2.0f) {
 		float x = 1000 * cos(i * PI / 180.0f);
 		float y = 1000 * sin(i * PI / 180.0f);
 		polygon.push_back(Vector2(x, y));
@@ -30,12 +30,17 @@ int _tmain(int argc, _TCHAR* argv[])
 	hole1->push_back(Vector2(2.5f, 7.5f));
 	//holes.push_back(hole1);
 
-	std::vector<Vector2> *vertices = new std::vector<Vector2>();
-	std::vector<int> *indices = new std::vector<int>();
+	std::vector<Vector2> *vertices = NULL;
+	std::vector<int> *indices = NULL;
 
 	Triangulator::triangulate(&polygon, &holes, indices, vertices);
 
-	printf("Indices: %i, Vertices: %i\n", indices->size(), vertices->size());
+	if (indices && vertices) {
+		printf("Indices: %i, Vertices: %i\n", indices->size(), vertices->size());
+	}
+	else {
+		printf("Not initialized.\n");
+	}
 	return 0;
 }
 

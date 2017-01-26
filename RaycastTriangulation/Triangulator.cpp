@@ -17,10 +17,14 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 {
 	unsigned int start = clock();
 
+	int idxCnt = 0;
+
 	printf("Triangulating %i points in polygon and %i holes.\n", polygon->size(), holes->size());
 
 	std::vector<EdgeVec2> *forbiddenLines = Triangulator::createForbiddenLines(polygon, holes);
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
+	vertices = new std::vector<Vector2>(pan->size());	
+	indices = new std::vector<int>((pan->size() + (holes->size() - 1) * 2) * 3);
 
 	printf("Created list of %i lines that may not be intersected.\n", forbiddenLines->size());
 	printf("Created list of %i points in the entire polygon.\n", pan->size());
@@ -72,7 +76,7 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 		}
 	}
 
-	//printf("Found %i forbidden lines.\n\n", forbiddenLines->size());
+	printf("Found %i forbidden lines.\n\n", forbiddenLines->size());
 
 	/*for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 		printf("Point %i (%f,%f) has neighbours:\n", i, pan->at(i).p->x, pan->at(i).p->y);
@@ -84,7 +88,8 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 
 	// Add all vertices
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
-		vertices->push_back(*pan->at(i)->p);
+		//vertices->push_back(*pan->at(i)->p);
+		vertices->at(i) = *pan->at(i)->p;
 	}
 
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
@@ -133,10 +138,16 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 
 
 						int* newTriangle = sortIndicesClockwise(vertices, a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
-						if (!containsTriangle(indices, newTriangle[0], newTriangle[1], newTriangle[2])) {
-							indices->push_back(newTriangle[0]);
+						if (!containsTriangle(indices, newTriangle[0], newTriangle[1], newTriangle[2], idxCnt)) {
+							/*indices->push_back(newTriangle[0]);
 							indices->push_back(newTriangle[1]);
-							indices->push_back(newTriangle[2]);
+							indices->push_back(newTriangle[2]);*/
+
+							indices->at(idxCnt) = newTriangle[0];
+							indices->at(idxCnt+1) = newTriangle[1];
+							indices->at(idxCnt+2) = newTriangle[2];
+							idxCnt += 3;
+
 
 							//printf("Adding triangle at %i, %i, %i.\n", newTriangle[0], newTriangle[1], newTriangle[2]);
 						}
@@ -272,9 +283,9 @@ int* Triangulator::sortIndicesClockwise(std::vector<Vector2> *vertices, int a, i
 	return tris;
 }
 
-bool Triangulator::containsTriangle(std::vector<int> *indices, int a, int b, int c)
+bool Triangulator::containsTriangle(std::vector<int> *indices, int a, int b, int c, int cnt)
 {
-	for (std::vector<Vector2>::size_type i = 0; i<indices->size(); i += 3)
+	for (std::vector<Vector2>::size_type i = 0; i<cnt; i += 3)
 	{
 		if ((indices->at(i) == a && indices->at(i + 1) == b && indices->at(i + 2) == c) ||
 			(indices->at(i) == a && indices->at(i + 1) == c && indices->at(i + 2) == b) ||

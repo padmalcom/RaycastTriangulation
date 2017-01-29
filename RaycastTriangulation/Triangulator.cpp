@@ -13,22 +13,23 @@ Triangulator::~Triangulator()
 {
 }
 
-std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, std::vector<std::vector<Vector2>*> *holes, std::vector<int> *indices, std::vector<Vector2> *vertices)
+std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices)
 {
 	unsigned int start = clock();
 
 	int idxCnt = 0;
 
-	printf("Triangulating %i points in polygon and %i holes.\n", polygon->size(), holes->size());
+	printf("Triangulating %i points in polygon and %i holes.\n", polygon.size(), holes.size());
 
 	std::vector<EdgeVec2> *forbiddenLines = Triangulator::createForbiddenLines(polygon, holes);
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
-	vertices = new std::vector<Vector2>(pan->size());	
-	indices = new std::vector<int>((pan->size() + (holes->size() - 1) * 2) * 3);
+	vertices = new std::vector<Vector2>(/*pan->size()*/);	
+	indices = new std::vector<int>(/*(pan->size() + (holes.size() - 1) * 2) * 3*/);
 
 	printf("Created list of %i lines that may not be intersected.\n", forbiddenLines->size());
 	printf("Created list of %i points in the entire polygon.\n", pan->size());
 
+	Vector2 line, bar1, bar2;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
@@ -42,20 +43,20 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 			}
 
 			// No angles for line drawing are allowed that are not between the angle between both intermediate neighbours
-			Vector2 *line = Vector2::sub(pan->at(j)->p, pan->at(i)->p);
-			Vector2 *bar1 = Vector2::sub(pan->at(i)->prev, pan->at(i)->p);
-			Vector2 *bar2 = Vector2::sub(pan->at(i)->next, pan->at(i)->p);
+			line = *pan->at(j)->p - *pan->at(i)->p;
+			bar1 = *pan->at(i)->prev - *pan->at(i)->p;
+			bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
 			if (!Vector2::isLineInBetweenVectors(bar1, bar2, line)) {
-				//printf("--Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n", line->x, line->y, bar1->x, bar1->y, bar2->x, bar2->y);
+				//printf("--Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n", line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
 				continue;
 			}
 
 			bool lineIntersects = false;
-			Vector2 *intersectionPoint = new Vector2();
-			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
+			Vector2 *intersectionPoint = NULL;
+			/*for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
-					if (Intersection::line_intersection(pan->at(i)->p, pan->at(j)->p, pan->at(k)->p, pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(*(intersectionPoint) == *(pan->at(i)->p) || *(intersectionPoint) == *(pan->at(j)->p))) {
+					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, *intersectionPoint) && !(*(intersectionPoint) == *(pan->at(i)->p) || *(intersectionPoint) == *(pan->at(j)->p))) {
 						//printf("Line (%f,%f) -> (%f,%f) intersects with line (%f,%f).\n", pan->at(i).p->x, pan->at(i).p->y,
 						//	pan->at(j).p->x, pan->at(j).p->y, pan->at(k).p->x, pan->at(k).p->y, pan->at(k).neighbours.at(l).p->x, pan->at(k).neighbours.at(l).p->y);
 						lineIntersects = true;
@@ -63,6 +64,21 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 					}
 				}
 				if (lineIntersects) break;
+			}*/
+
+			for (std::vector<EdgeVec2>::size_type k = 0; k < forbiddenLines->size(); k++) {
+				if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *forbiddenLines->at(k).a, *forbiddenLines->at(k).b, intersectionPoint)) {
+					if (intersectionPoint) {
+						if ((*intersectionPoint != *pan->at(i)->p) && (*intersectionPoint != *pan->at(j)->p)) {
+
+							/*printf("Line (%f,%f) -> (%f,%f) intersects with line (%f,%f) -> (%f,%f) at (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y,
+								pan->at(j)->p->x, pan->at(j)->p->y, forbiddenLines->at(k).a->x, forbiddenLines->at(k).a->y, forbiddenLines->at(k).b->x, forbiddenLines->at(k).b->y,
+								intersectionPoint->x, intersectionPoint->y);*/
+							lineIntersects = true;
+							break;
+						}
+					}
+				}
 			}
 
 			if (!lineIntersects) {
@@ -73,25 +89,31 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 
 				//printf("Adding line from (%f, %f) to (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, pan->at(j)->p->x, pan->at(j)->p->y);
 			}
+			/*else {
+				break;
+			}*/
 		}
 	}
 
 	printf("Found %i forbidden lines.\n\n", forbiddenLines->size());
 
 	/*for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
-		printf("Point %i (%f,%f) has neighbours:\n", i, pan->at(i).p->x, pan->at(i).p->y);
-		for (std::vector<PointAndNeighbours>::size_type j = 0; j < pan->at(i).neighbours.size(); j++) {
-			printf("\t(%f,%f):\n", pan->at(i).neighbours.at(j).p->x, pan->at(i).neighbours.at(j).p->y);
+		printf("Point %i (%f,%f) has neighbours:\n", i, pan->at(i)->p->x, pan->at(i)->p->y);
+		for (std::vector<PointAndNeighbours>::size_type j = 0; j < pan->at(i)->neighbours.size(); j++) {
+			printf("\t(%f,%f).\n", pan->at(i)->neighbours.at(j)->p->x, pan->at(i)->neighbours.at(j)->p->y);
 		}
 		printf("\n\n");
 	}*/
 
 	// Add all vertices
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
-		//vertices->push_back(*pan->at(i)->p);
-		vertices->at(i) = *pan->at(i)->p;
+		vertices->push_back(*pan->at(i)->p);
+		//vertices->at(i) = *pan->at(i)->p;
 	}
 
+	int tris = 0;
+
+	Tris newTriangle;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		PointAndNeighbours *a = pan->at(i);
@@ -117,7 +139,7 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 				
 
 				// If angle a -> b -> c >= 180° => continue since not clockwise. TODO: Measure what's faster. TO compare or to sort?
-				if (Vector2::angBetweenVecs(Vector2::sub(a->p, b->p), Vector2::sub(c->p, b->p)) >= 180) {
+				if (Vector2::angBetweenVecs(*a->p - *b->p, *c->p - *b->p) >= 180) {
 					//printf("Wrong angle.\n");
 					continue;
 				}
@@ -135,21 +157,25 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 
 					if (*(d->p) == *(a->p)) {
 						//printf("Found triangle at %i, %i, %i.\n", a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
+					
+						newTriangle = sortIndicesClockwise(*vertices, a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
+						//printf("Found %i tris at (%f,%f)->(%f,%f)->(%f,%f) with sorted indices %i, %i, %i\n", ++tris,
+						//	a->neighbours.at(j)->p->x, a->neighbours.at(j)->p->y, b->neighbours.at(k)->p->x, b->neighbours.at(k)->p->y, c->neighbours.at(l)->p->x, c->neighbours.at(l)->p->y,
+						//	newTriangle.i[0], newTriangle.i[1], newTriangle.i[2]);
+
+						if (!containsTriangle(*indices, newTriangle.i[0], newTriangle.i[1], newTriangle.i[2]/*, idxCnt*/)) {
+							indices->push_back(newTriangle.i[0]);
+							indices->push_back(newTriangle.i[1]);
+							indices->push_back(newTriangle.i[2]);
+
+							/*indices->at(idxCnt) = newTriangle.i[0];
+							indices->at(idxCnt + 1) = newTriangle.i[1];
+							indices->at(idxCnt + 2) = newTriangle.i[2];
+							idxCnt += 3;*/
 
 
-						int* newTriangle = sortIndicesClockwise(vertices, a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
-						if (!containsTriangle(indices, newTriangle[0], newTriangle[1], newTriangle[2], idxCnt)) {
-							/*indices->push_back(newTriangle[0]);
-							indices->push_back(newTriangle[1]);
-							indices->push_back(newTriangle[2]);*/
 
-							indices->at(idxCnt) = newTriangle[0];
-							indices->at(idxCnt+1) = newTriangle[1];
-							indices->at(idxCnt+2) = newTriangle[2];
-							idxCnt += 3;
-
-
-							//printf("Adding triangle at %i, %i, %i.\n", newTriangle[0], newTriangle[1], newTriangle[2]);
+							//printf("Adding triangle at %i, %i, %i.\n", newTriangle.i[0], newTriangle.i[1], newTriangle.i[2]);
 						}
 					}
 				}
@@ -162,78 +188,78 @@ std::vector<EdgeVec2> *Triangulator::triangulate(std::vector<Vector2> *polygon, 
 	return forbiddenLines;
 }
 
-std::vector<EdgeVec2> *Triangulator::createForbiddenLines(std::vector<Vector2> *polygon, std::vector<std::vector<Vector2>*> *holes) {
+std::vector<EdgeVec2> *Triangulator::createForbiddenLines(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {
 	std::vector<EdgeVec2> *result = new std::vector<EdgeVec2>();
-	for (std::vector<Vector2>::size_type i = 0; i < polygon->size(); i++) {
-		if (i < polygon->size() - 1) {
-			result->push_back(EdgeVec2(&polygon->at(i), &polygon->at(i + 1), true));
+	for (std::vector<Vector2>::size_type i = 0; i < polygon.size(); i++) {
+		if (i < polygon.size() - 1) {
+			result->push_back(EdgeVec2(&polygon.at(i), &polygon.at(i + 1), true));
 		}
 		else {
-			result->push_back(EdgeVec2(&polygon->at(i), &polygon->at(0), true));
+			result->push_back(EdgeVec2(&polygon.at(i), &polygon.at(0), true));
 		}
 	}
 
-	for (std::vector<Vector2>::size_type i = 0; i < holes->size(); i++) {
-		for (std::vector<Vector2>::size_type j = 0; j < holes->at(i)->size(); j++) {
-			if (j < holes->at(i)->size() - 1) {
-				result->push_back(EdgeVec2(&holes->at(i)->at(j), &holes->at(i)->at(j + 1), true));
+	for (std::vector<Vector2>::size_type i = 0; i < holes.size(); i++) {
+		for (std::vector<Vector2>::size_type j = 0; j < holes.at(i)->size(); j++) {
+			if (j < holes.at(i)->size() - 1) {
+				result->push_back(EdgeVec2(&holes.at(i)->at(j), &holes.at(i)->at(j + 1), true));
 			}
 			else {
-				result->push_back(EdgeVec2(&holes->at(i)->at(j), &holes->at(i)->at(0), true));
+				result->push_back(EdgeVec2(&holes.at(i)->at(j), &holes.at(i)->at(0), true));
 			}
 		}
 	}
 	return result;
 }
 
-std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> *polygon, std::vector<std::vector<Vector2>*> *holes) {
+std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {
 	std::vector<PointAndNeighbours*> *result = new std::vector<PointAndNeighbours*>();
 
-	for (std::vector<Vector2>::size_type i = 0; i < polygon->size(); i++) {
+	for (std::vector<Vector2>::size_type i = 0; i < polygon.size(); i++) {
 		if (i == 0) {
-			result->push_back(new PointAndNeighbours(new Vector2(polygon->at(i)), new Vector2(polygon->at(polygon->size() - 1)), new Vector2(polygon->at(i + 1)), result->size(), false));
+			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(polygon.size() - 1)), new Vector2(polygon.at(i + 1)), result->size(), false));
 		}
-		else if (i == polygon->size() - 1) {
-			result->push_back(new PointAndNeighbours(new Vector2(polygon->at(i)), new Vector2(polygon->at(i - 1)), new Vector2(polygon->at(0)), result->size(), false));
+		else if (i == polygon.size() - 1) {
+			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(0)), result->size(), false));
 			result->at(result->size() - 1)->neighbours.push_back(result->at(0));
 			result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 			result->at(result->size() - 1)->nextPan = result->at(0);
 			result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
 		}
 		else {
-			result->push_back(new PointAndNeighbours(new Vector2(polygon->at(i)), new Vector2(polygon->at(i - 1)), new Vector2(polygon->at(i + 1)), result->size(), false));
+			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(i + 1)), result->size(), false));
 			result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 			result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
 		}
 	}
 	//printf("Found %n points.", result->size());
-	for (std::vector<std::vector<Vector2>*>::size_type i = 0; i < holes->size(); i++) {
+	for (std::vector<std::vector<Vector2>*>::size_type i = 0; i < holes.size(); i++) {
 		int start = result->size();
-		int end = start + holes->at(i)->size() - 1;
-		for (std::vector<Vector2>::size_type j = holes->at(i)->size(); j-- > 0;) {
+		int end = start + holes.at(i)->size() - 1;
+		for (std::vector<Vector2>::size_type j = holes.at(i)->size(); j-- > 0;) {
 
-			printf("Adding point %i of hole %i of %i.\n", j, i, holes->at(i)->size());
+			printf("Adding point %i of hole %i of %i.\n", j, i, holes.at(i)->size());
 			
 			if (j == 0) {
-				Vector2 a = holes->at(i)->at(j);
-				Vector2 b = holes->at(i)->at(j + 1);
-				Vector2 c = holes->at(i)->at(holes->at(i)->size() - 1);
+				Vector2 a = holes.at(i)->at(j);
+				Vector2 b = holes.at(i)->at(j + 1);
+				Vector2 c = holes.at(i)->at(holes.at(i)->size() - 1);
 				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(b.x, b.y), new Vector2(c.x, c.y), result->size(), true));
 				result->at(result->size() - 1)->neighbours.push_back(result->at(start));
 				result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 				result->at(result->size() - 1)->nextPan = result->at(start);
 				result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
 			}
-			else if (j == holes->at(i)->size() - 1) {
-				Vector2 a = holes->at(i)->at(j);
-				Vector2 e = holes->at(i)->at(0);
-				Vector2 d = holes->at(i)->at(j - 1);
+			else if (j == holes.at(i)->size() - 1) {
+				Vector2 a = holes.at(i)->at(j);
+				Vector2 e = holes.at(i)->at(0);
+				Vector2 d = holes.at(i)->at(j - 1);
 				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(e.x, e.y), new Vector2(d.x, d.y), result->size(), true));
 			}
 			else {
-				Vector2 a = holes->at(i)->at(j);
-				Vector2 d = holes->at(i)->at(j - 1);
-				Vector2 e = holes->at(i)->at(0);
+				Vector2 a = holes.at(i)->at(j);
+				Vector2 d = holes.at(i)->at(j - 1);
+				Vector2 e = holes.at(i)->at(0);
 				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(e.x, e.y), new Vector2(d.x, d.y), result->size(), true));
 				result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 				result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
@@ -244,55 +270,67 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 	return result;
 }
 
-int* Triangulator::sortIndicesClockwise(std::vector<Vector2> *vertices, int a, int b, int c)
+Tris Triangulator::sortIndicesClockwise(std::vector<Vector2> &vertices, int a, int b, int c)
 {
-	int* tris = new int[3];
-
-	// Get center of vectors
-	Vector2 *center = new Vector2((vertices->at(a).x + vertices->at(b).x + vertices->at(c).x) / 3.0f, (vertices->at(a).y + vertices->at(b).y + vertices->at(c).y) / 3.0f);
+	Tris tris;
 
 	// Sort vectors clockwise around center
-	std::vector<Vector2> *vecs = new std::vector<Vector2>();
-	vecs->push_back(Vector2(vertices->at(a).x - center->x, vertices->at(a).y - center->y));
-	vecs->push_back(Vector2(vertices->at(b).x - center->x, vertices->at(b).y - center->y));
-	vecs->push_back(Vector2(vertices->at(c).x - center->x, vertices->at(c).y - center->y));
+	std::vector<Vector2> vecs;
+	vecs.push_back(vertices.at(a));
+	vecs.push_back(vertices.at(b));
+	vecs.push_back(vertices.at(c));
 
-	std::sort(vecs->begin(), vecs->end(), Vector2::sortByAngle());
-
-	for (std::vector<Vector2>::size_type i = 0; i < vecs->size(); i++) {
-		vecs->at(i).x += center->x;
-		vecs->at(i).y += center->y;
-	}
+	std::sort(vecs.begin(), vecs.end(), Vector2::sortByAngle());
 
 	for (int i = 0; i < 3; i++)
 	{
-		if (vecs->at(0) == vertices->at(a))
+		if (vecs.at(0) == vertices.at(a))
 		{
-			tris[i] = a;
+			tris.i[i] = a;
 		}
-		else if (vecs->at(0) == vertices->at(b))
+		else if (vecs.at(0) == vertices.at(b))
 		{
-			tris[i] = b;
+			tris.i[i] = b;
 		}
 		else
 		{
-			tris[i] = c;
+			tris.i[i] = c;
 		}
-		vecs->erase(vecs->begin()); // Delete first element
+		vecs.erase(vecs.begin()); // Delete first element
 	}
 	return tris;
 }
 
-bool Triangulator::containsTriangle(std::vector<int> *indices, int a, int b, int c, int cnt)
+void Triangulator::sortVectorsClockwiseAroundCenter(std::vector<Vector2> &vecs) {
+	
+	Vector2 center = { 0.0f, 0.0f };
+	for (std::vector<Vector2>::size_type i = 0; i < vecs.size(); i++) {
+		center = center + vecs.at(i);
+	}
+	center.x /= vecs.size();
+	center.y /= vecs.size();
+	
+	for (std::vector<Vector2>::size_type i = 0; i < vecs.size(); i++) {
+		vecs.at(i) = vecs.at(i) - center;
+	}
+
+	std::sort(vecs.begin(), vecs.end(), Vector2::sortByAngle());
+
+	for (std::vector<Vector2>::size_type i = 0; i < vecs.size(); i++) {
+		vecs.at(i) = vecs.at(i) + center;
+	}
+}
+
+bool Triangulator::containsTriangle(std::vector<int> &indices, int a, int b, int c)
 {
-	for (std::vector<Vector2>::size_type i = 0; i<cnt; i += 3)
+	for (std::vector<int>::size_type i = 0; i<indices.size(); i += 3)
 	{
-		if ((indices->at(i) == a && indices->at(i + 1) == b && indices->at(i + 2) == c) ||
-			(indices->at(i) == a && indices->at(i + 1) == c && indices->at(i + 2) == b) ||
-			(indices->at(i) == b && indices->at(i + 1) == a && indices->at(i + 2) == c) ||
-			(indices->at(i) == b && indices->at(i + 1) == c && indices->at(i + 2) == a) ||
-			(indices->at(i) == c && indices->at(i + 1) == a && indices->at(i + 2) == b) ||
-			(indices->at(i) == c && indices->at(i + 1) == b && indices->at(i + 2) == a)
+		if ((indices.at(i) == a && indices.at(i + 1) == b && indices.at(i + 2) == c) ||
+			(indices.at(i) == a && indices.at(i + 1) == c && indices.at(i + 2) == b) ||
+			(indices.at(i) == b && indices.at(i + 1) == a && indices.at(i + 2) == c) ||
+			(indices.at(i) == b && indices.at(i + 1) == c && indices.at(i + 2) == a) ||
+			(indices.at(i) == c && indices.at(i + 1) == a && indices.at(i + 2) == b) ||
+			(indices.at(i) == c && indices.at(i + 1) == b && indices.at(i + 2) == a)
 			)
 		{
 			return true;

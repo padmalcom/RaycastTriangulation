@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "Vector2.h"
 #include <math.h>
-
-
+#include "TinyMath.h"
 
 Vector2::Vector2(float _x, float _y)
 {
@@ -17,42 +16,37 @@ Vector2::~Vector2()
 {
 }
 
-float Vector2::angBetweenVecs(Vector2 *_v1, Vector2 *_v2) {
+double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 
-	Vector2 *v1Norm = Vector2::normalize(_v1);
-	Vector2 *v2Norm = Vector2::normalize(_v2);
+	Vector2 v1Norm = _v1.normalize();
+	Vector2 v2Norm = _v2.normalize();
 
-	//printf("Normalized 1: (%f, %f) 2: (%f,%f).\n", v1Norm->x, v1Norm->y, v2Norm->x, v2Norm->y);
+	//printf("Normalized 1: (%f, %f) 2: (%f,%f).\n", v1Norm.x, v1Norm.y, v2Norm.x, v2Norm.y);
 	
-	//float angle = (atan2(_v2->y, _v2->x) - atan2(_v1->y, _v1->x)) * 180 / PI;
-	float angle = acos(v1Norm->x * v2Norm->x + v1Norm->y * v2Norm->y) * 180 / PI;
+	//float angle = (atan2(v2Norm.y, v2Norm.x) - atan2(v1Norm.y, v1Norm.x)) * 180 / PI;
+	float angle = acos(v1Norm.x * v2Norm.x + v1Norm.y * v2Norm.y) * 180 / PI;
 
 	// Calculate cross product z component
-	float z = _v1->x * _v2->y - _v1->y * _v2->x;
+	float z = _v1.x * _v2.y - _v1.y * _v2.x;
 	if (z > 0.0f) {
 		angle = 360.0f - angle;
 	}
 
-	//printf("Angle between (%f,%f) and (%f,%f) is %f\n", _v1->x, _v1->y, _v2->x, _v2->y, angle);
+	//printf("Angle between (%f,%f) and (%f,%f) is %f\n", _v1.x, _v1.y, _v2.x, _v2.y, angle);
 	return angle;
 }
 
-
-Vector2* Vector2::sub(Vector2 *_v1, Vector2 *_v2) {
-	return new Vector2(_v1->x - _v2->x, _v1->y - _v2->y);
+Vector2 Vector2::normalize() {
+	float len = this->length();
+	return Vector2(this->x / len, this->y / len);
 }
 
-Vector2* Vector2::normalize(Vector2 *_v) {
-	float len = Vector2::length(_v);
-	return new Vector2(_v->x / len, _v->y / len);
-}
-
-float Vector2::length(Vector2 *_v) {
-	return sqrtf(_v->x * _v->x + _v->y * _v->y);
+float Vector2::length() {
+	return sqrtf(this->x * this->x + this->y * this->y);
 }
 
 
-bool Vector2::isLineInBetweenVectors(Vector2 *_v1, Vector2 *_v2, Vector2 *_line) {
+bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line) {
 
 	//printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f).\n", _line->x, _line->y, _v1->x, _v1->y, _v2->x, _v2->y);
 
@@ -64,8 +58,20 @@ bool Vector2::isLineInBetweenVectors(Vector2 *_v1, Vector2 *_v2, Vector2 *_line)
 }
 
 bool Vector2::operator == (const Vector2& v) const {
-	//printf("Comparing (%f,%f) to (%f,%f).\n", this->x, this->y, v.x, v.y);
-	return this->x == v.x && this->y == v.y;
+	return TinyMath::compareFloat(this->x, v.x) && TinyMath::compareFloat(this->y, v.y);
+	// return this->x == v.x && this->y == v.y;
+}
+
+bool Vector2::operator != (const Vector2& v) const {
+	return !(*this == v);
+}
+
+Vector2 Vector2::operator - (const Vector2& v) const {
+	return Vector2(this->x - v.x, this->y - v.y);
+}
+
+Vector2 Vector2::operator + (const Vector2& v) const {
+	return Vector2(this->x + v.x, this->y + v.y);
 }
 
 

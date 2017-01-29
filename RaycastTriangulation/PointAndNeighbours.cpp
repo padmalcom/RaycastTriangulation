@@ -10,7 +10,7 @@ PointAndNeighbours::PointAndNeighbours(Vector2 *_p, Vector2 *_prev, Vector2 *_ne
 	this->next = _next;
 	this->index = _index;
 	this->isHole = _isHole;
-	this->angle = Vector2::angBetweenVecs(this->prev, this->next);
+	this->angle = Vector2::angBetweenVecs(*this->prev, *this->next);
 }
 
 PointAndNeighbours::~PointAndNeighbours()

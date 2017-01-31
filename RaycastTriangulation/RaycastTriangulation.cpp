@@ -127,9 +127,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	polygon.push_back(Vector2(0, 10));*/
 
 	// Circle
-	for (float i = 0; i < 360; i += 90.0f) {
-		float x = 10000 * cos(i * PI / 180.0f);
-		float y = 10000 * sin(i * PI / 180.0f);
+	for (int i = 0; i < 360; i += 1) {
+		int depth = i % 2 == 0 ? 10000 : 20000;
+		float x = depth * cos(i * PI / 180.0f);
+		float y = depth * sin(i * PI / 180.0f);
 		polygon.push_back(Vector2(x, y));
 	}
 

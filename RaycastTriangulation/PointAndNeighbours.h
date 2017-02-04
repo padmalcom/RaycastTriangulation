@@ -14,7 +14,7 @@ public:
 	Vector2 *p;
 	Vector2 *prev;
 	Vector2 *next;
-	float angle;
+	double angle;
 	bool isHole = false;
 	std::vector<PointAndNeighbours*> neighbours;
 	PointAndNeighbours *nextPan;

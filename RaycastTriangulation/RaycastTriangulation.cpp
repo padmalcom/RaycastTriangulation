@@ -8,10 +8,11 @@
 #include "Triangulator.h"
 #include "TriangleIO.h"
 
-//const double PI = atan(1.0) * 4;
-
 int _tmain(int argc, _TCHAR* argv[])
 {
+	std::vector<Vector2> polygon;
+	std::vector<std::vector<Vector2>*> holes;
+	bool asArray = false;
 
 	printf("Raycast Triangulator\n====================\nWritten by Jonas Freiknecht 2017\n\n");
 	if (argc != 4) {
@@ -19,7 +20,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 0;
 	}
 
-	bool asArray = false;
+	
 	if (argc == 4) {
 		std::wstring wtype(argv[3]);
 		std::string type(wtype.begin(), wtype.end());
@@ -40,10 +41,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::string input(win.begin(), win.end());
 	std::string output(wout.begin(), wout.end());
 
-	printf("Reading input file %s...\n", input.c_str(), output.c_str());
-
-	std::vector<Vector2> polygon;
-	std::vector<std::vector<Vector2>*> holes;
+	printf("Reading input file %s...\n", input.c_str());
 
 	TriangleIO::readPolygon(input, polygon, holes);
 
@@ -161,9 +159,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	// Rectangle
 	/*polygon.push_back(Vector2(0, 0));
-	polygon.push_back(Vector2(10, 0));
-	polygon.push_back(Vector2(10, 10));
-	polygon.push_back(Vector2(0, 10));*/
+	polygon.push_back(Vector2(100, 0));
+	polygon.push_back(Vector2(100, 100));
+	polygon.push_back(Vector2(0, 100));*/
 
 	// Circle
 	/*for (int i = 0; i < 360; i += 1) {
@@ -192,8 +190,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	hole1->push_back(Vector2(2.5f, 2.5f));
 	hole1->push_back(Vector2(7.5f, 2.5f));
 	hole1->push_back(Vector2(7.5f, 7.5f));
-	hole1->push_back(Vector2(2.5f, 7.5f));*/
-	//holes.push_back(hole1);
+	hole1->push_back(Vector2(2.5f, 7.5f));
+	holes.push_back(hole1);*/
 
 	std::vector<Vector2> *vertices = NULL;
 	std::vector<int> *indices = NULL;

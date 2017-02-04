@@ -35,14 +35,14 @@ void TriangleIO::readPolygon(std::string &fileName, std::vector<Vector2> &polygo
 			split(line, std::string(","), words);
 
 			if (words.size() == 3) { // It is a point
-				float x = atof(words.at(1).c_str());
-				float y = atof(words.at(2).c_str());
+				double x = atof(words.at(1).c_str());
+				double y = atof(words.at(2).c_str());
 				polygon.push_back(Vector2(x, y));
 			}
 			else if (words.size() == 4) { // It is a hole
 				int holeId = atoi(words.at(1).c_str());
-				float x = atof(words.at(2).c_str());
-				float y = atof(words.at(3).c_str());
+				double x = atof(words.at(2).c_str());
+				double y = atof(words.at(3).c_str());
 				if (holeId > currentHoleId) {
 					holes.push_back(new std::vector<Vector2>());
 					currentHoleId = holeId;
@@ -87,7 +87,7 @@ void TriangleIO::writeTriangle(std::string &fileName, std::vector<int> &indices,
 			}		
 		}
 		if (asArray) {
-			myfile << "};\n\int[] indices = new int[] {";
+			myfile << "};\n\nint[] indices = new int[] {";
 		}
 		for (std::vector<int>::size_type i = 0; i < indices.size(); i+=3) {
 			myfile << indices.at(i);

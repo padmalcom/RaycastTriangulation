@@ -1,16 +1,9 @@
 #include "stdafx.h"
 #include "Triangulator.h"
 #include "Intersection.h"
+#include "TinyMath.h"
 #include <algorithm>
 
-Triangulator::Triangulator()
-{
-}
-
-
-Triangulator::~Triangulator()
-{
-}
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices)
 {
@@ -20,10 +13,10 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	vertices = new std::vector<Vector2>(/*pan->size()*/);	
 	indices = new std::vector<int>(/*(pan->size() + (holes.size() - 1) * 2) * 3*/);
 
-	//printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
+	printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
 
 	Vector2 line, bar1, bar2;
-	float ang;
+	double ang;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
@@ -51,8 +44,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
 					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(*(intersectionPoint) == *(pan->at(i)->p) || *(intersectionPoint) == *(pan->at(j)->p))) {
-						//printf("Line (%f,%f) -> (%f,%f) intersects with line (%f,%f).\n", pan->at(i).p->x, pan->at(i).p->y,
-						//	pan->at(j).p->x, pan->at(j).p->y, pan->at(k).p->x, pan->at(k).p->y, pan->at(k).neighbours.at(l).p->x, pan->at(k).neighbours.at(l).p->y);
+						//printf("Line (%f,%f) -> (%f,%f) intersects with line (%f,%f)->(%f,%f) at (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y,
+						//	pan->at(j)->p->x, pan->at(j)->p->y, pan->at(k)->p->x, pan->at(k)->p->y, pan->at(k)->neighbours.at(l)->p->x, pan->at(k)->neighbours.at(l)->p->y,
+						//	intersectionPoint->x, intersectionPoint->y);
 						lineIntersects = true;
 						break;
 					}
@@ -74,8 +68,15 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 		//vertices->at(i) = *pan->at(i)->p;
 	}
 
-	int tris = 0;
-	Tris newTriangle;
+	/*for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
+		printf("Point % i at (%f,%f) has %i neighbours.\n", i, pan->at(i)->p->x, pan->at(i)->p->y, pan->at(i)->neighbours.size());
+		for (std::vector<Vector2>::size_type j = 0; j < pan->at(i)->neighbours.size(); j++) {
+			printf("\tNeighbour %i at (%f,%f).\n", j, pan->at(i)->neighbours.at(j)->p->x, pan->at(i)->neighbours.at(j)->p->y);
+		}
+	}*/
+
+	int tris = 0, p1, p2, p3;
+	bool pointInTris = false;
 
 	for (std::vector<PointAndNeighbours*>::size_type i = 0; i < pan->size(); i++) {
 
@@ -107,6 +108,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 					continue;
 				}
 
+				pointInTris = false;
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < c->neighbours.size(); l++) {
 
 					PointAndNeighbours *d = c->neighbours.at(l);
@@ -119,19 +121,51 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 					//printf("HERE comparing (%f,%f) to (%f,%f).\n", d->p->x, d->p->y, a->p->x, a->p->y);
 
 					if (*(d->p) == *(a->p)) {
-						//printf("Found triangle at %i, %i, %i.\n", a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
-					
-						newTriangle = sortIndicesClockwise(*vertices, a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
-						//printf("Found %i tris at (%f,%f)->(%f,%f)->(%f,%f) with sorted indices %i, %i, %i\n", ++tris,
-						//	a->neighbours.at(j)->p->x, a->neighbours.at(j)->p->y, b->neighbours.at(k)->p->x, b->neighbours.at(k)->p->y, c->neighbours.at(l)->p->x, c->neighbours.at(l)->p->y,
-						//	newTriangle.i[0], newTriangle.i[1], newTriangle.i[2]);
+						/*printf("Found triangle at (%f,%f), (%f,%f), (%f,%f).\n",
+							vertices->at(a->neighbours.at(j)->index).x,
+							vertices->at(a->neighbours.at(j)->index).y,
+							vertices->at(b->neighbours.at(k)->index).x,
+							vertices->at(b->neighbours.at(k)->index).y,
+							vertices->at(c->neighbours.at(l)->index).x,
+							vertices->at(c->neighbours.at(l)->index).y);*/
 
-						if (!containsTriangle(*indices, newTriangle.i[0], newTriangle.i[1], newTriangle.i[2])) {
-							indices->push_back(newTriangle.i[0]);
-							indices->push_back(newTriangle.i[1]);
-							indices->push_back(newTriangle.i[2]);
+						//printf("Found triangle at %i,%i,%i.\n", a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
 
-							//printf("Adding triangle at %i, %i, %i.\n", newTriangle.i[0], newTriangle.i[1], newTriangle.i[2]);
+						for (std::vector<PointAndNeighbours>::size_type m = 0; m < pan->size(); m++) {
+
+							if (pan->at(m)->index == a->neighbours.at(j)->index ||
+								pan->at(m)->index == b->neighbours.at(k)->index ||
+								pan->at(m)->index == c->neighbours.at(l)->index) {
+								continue;
+							}
+
+							if (TinyMath::pointInTriangle(*pan->at(m)->p,
+								vertices->at(a->neighbours.at(j)->index),
+								vertices->at(b->neighbours.at(k)->index),
+								vertices->at(c->neighbours.at(l)->index))) {
+								//printf("Point %i at (%f,%f) is in current triangle. Continuing.\n", m, pan->at(m)->p->x, pan->at(m)->p->y);
+								pointInTris = true;
+								break;
+							}
+						}
+
+						if (!pointInTris) {
+
+							p1 = a->neighbours.at(j)->index;
+							p2 = b->neighbours.at(k)->index;
+							p3 = c->neighbours.at(l)->index;
+
+							if (TinyMath::orientation(vertices->at(p1), vertices->at(p2), vertices->at(p3)) >= 0.0f) {
+								std::swap(p1, p2);
+							}
+
+							if (!containsTriangle(*indices, p1, p2, p3)) {
+								indices->push_back(p1);
+								indices->push_back(p2);
+								indices->push_back(p3);
+
+								//printf("Adding triangle at %i, %i, %i.\n", newTriangle.i[0], newTriangle.i[1], newTriangle.i[2]);
+							}
 						}
 					}
 				}
@@ -223,67 +257,13 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 	return result;
 }
 
-Tris Triangulator::sortIndicesClockwise(std::vector<Vector2> &vertices, int a, int b, int c)
-{
-	Tris tris;
-
-	// Sort vectors clockwise around center
-	std::vector<Vector2> vecs;
-	vecs.push_back(vertices.at(a));
-	vecs.push_back(vertices.at(b));
-	vecs.push_back(vertices.at(c));
-
-	std::sort(vecs.begin(), vecs.end(), Vector2::sortByAngle());
-
-	for (int i = 0; i < 3; i++)
-	{
-		if (vecs.at(0) == vertices.at(a))
-		{
-			tris.i[i] = a;
-		}
-		else if (vecs.at(0) == vertices.at(b))
-		{
-			tris.i[i] = b;
-		}
-		else
-		{
-			tris.i[i] = c;
-		}
-		vecs.erase(vecs.begin()); // Delete first element
-	}
-	return tris;
-}
-
-void Triangulator::sortVectorsClockwiseAroundCenter(std::vector<Vector2> &vecs) {
-	
-	Vector2 center = { 0.0f, 0.0f };
-	for (std::vector<Vector2>::size_type i = 0; i < vecs.size(); i++) {
-		center = center + vecs.at(i);
-	}
-	center.x /= vecs.size();
-	center.y /= vecs.size();
-	
-	for (std::vector<Vector2>::size_type i = 0; i < vecs.size(); i++) {
-		vecs.at(i) = vecs.at(i) - center;
-	}
-
-	std::sort(vecs.begin(), vecs.end(), Vector2::sortByAngle());
-
-	for (std::vector<Vector2>::size_type i = 0; i < vecs.size(); i++) {
-		vecs.at(i) = vecs.at(i) + center;
-	}
-}
-
 bool Triangulator::containsTriangle(std::vector<int> &indices, int a, int b, int c)
 {
 	for (std::vector<int>::size_type i = 0; i<indices.size(); i += 3)
 	{
 		if ((indices.at(i) == a && indices.at(i + 1) == b && indices.at(i + 2) == c) ||
-			(indices.at(i) == a && indices.at(i + 1) == c && indices.at(i + 2) == b) ||
-			(indices.at(i) == b && indices.at(i + 1) == a && indices.at(i + 2) == c) ||
 			(indices.at(i) == b && indices.at(i + 1) == c && indices.at(i + 2) == a) ||
-			(indices.at(i) == c && indices.at(i + 1) == a && indices.at(i + 2) == b) ||
-			(indices.at(i) == c && indices.at(i + 1) == b && indices.at(i + 2) == a)
+			(indices.at(i) == c && indices.at(i + 1) == a && indices.at(i + 2) == b)
 			)
 		{
 			return true;

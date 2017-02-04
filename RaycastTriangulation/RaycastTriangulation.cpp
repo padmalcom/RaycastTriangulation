@@ -2,15 +2,54 @@
 //
 #define NO_STDIO_REDIRECT
 #include "stdafx.h"
+#include <ctime>
 
 #include "Vector2.h"
 #include "Triangulator.h"
+#include "TriangleIO.h"
 
 //const double PI = atan(1.0) * 4;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+
+	printf("Raycast Triangulator\n====================\nWritten by Jonas Freiknecht 2017\n\n");
+	if (argc != 4) {
+		printf("Expecting 3 parameters - input and output file and output type ('list' or 'array').\n");
+		return 0;
+	}
+
+	bool asArray = false;
+	if (argc == 4) {
+		std::wstring wtype(argv[3]);
+		std::string type(wtype.begin(), wtype.end());
+
+		if (type == "array") {
+			asArray = true;
+		}
+		else if (type == "list") {
+			asArray = false;
+		}
+		else {
+			printf("Could not recognize output type. Please specify 'list' or 'array' as 3rd parameter.\n");
+		}
+	}
+
+	std::wstring win(argv[1]);
+	std::wstring wout(argv[2]);
+	std::string input(win.begin(), win.end());
+	std::string output(wout.begin(), wout.end());
+
+	printf("Reading input file %s...\n", input.c_str(), output.c_str());
+
 	std::vector<Vector2> polygon;
+	std::vector<std::vector<Vector2>*> holes;
+
+	TriangleIO::readPolygon(input, polygon, holes);
+
+	printf("Found polygon with %i points and %i holes.\n\n", polygon.size(), holes.size());
+
+	unsigned int start = clock();
 	
 	// Germany
 	/*polygon.push_back(Vector2(9.44535423355f, 54.8254001391f));
@@ -127,12 +166,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	polygon.push_back(Vector2(0, 10));*/
 
 	// Circle
-	for (int i = 0; i < 360; i += 1) {
+	/*for (int i = 0; i < 360; i += 1) {
 		int depth = i % 2 == 0 ? 10000 : 20000;
 		float x = depth * cos(i * PI / 180.0f);
 		float y = depth * sin(i * PI / 180.0f);
 		polygon.push_back(Vector2(x, y));
-	}
+	}*/
 
 	// Shell
 	/*polygon.push_back(Vector2(10.0f, 0.0f));
@@ -148,25 +187,27 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("Added vector (%f,%f).\n", polygon.at(i).x, polygon.at(i).y);
 	}*/
 	
-	std::vector<std::vector<Vector2>*> holes;
-	std::vector<Vector2> *hole1 = new std::vector<Vector2>();
+	
+	/*std::vector<Vector2> *hole1 = new std::vector<Vector2>();
 	hole1->push_back(Vector2(2.5f, 2.5f));
 	hole1->push_back(Vector2(7.5f, 2.5f));
 	hole1->push_back(Vector2(7.5f, 7.5f));
-	hole1->push_back(Vector2(2.5f, 7.5f));
+	hole1->push_back(Vector2(2.5f, 7.5f));*/
 	//holes.push_back(hole1);
 
 	std::vector<Vector2> *vertices = NULL;
 	std::vector<int> *indices = NULL;
 
+	printf("Starting triangulation ...\n");
 	Triangulator::triangulate(polygon, holes, indices, vertices);
 
-	if (indices && vertices) {
-		printf("Indices: %i, Vertices: %i\n", indices->size(), vertices->size());
-	}
-	else {
-		printf("Not initialized.\n");
-	}
+	unsigned int stop = clock() - start;
+
+	printf("Found %i vertices and %i indices in %i milliseconds.\n\n", vertices->size(), indices->size(), stop);
+
+	TriangleIO::writeTriangle(output, *indices, *vertices, asArray);
+	printf("Vertices and indices written to %s as %s. Done.\n", output.c_str(), (asArray ? "array" : "list"));
+
 	return 0;
 }
 

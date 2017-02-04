@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Triangulator.h"
 #include "Intersection.h"
-#include <ctime>
 #include <algorithm>
 
 Triangulator::Triangulator()
@@ -15,17 +14,13 @@ Triangulator::~Triangulator()
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices)
 {
-	unsigned int start = clock();
-
 	int idxCnt = 0;
-
-	printf("Triangulating %i points in polygon and %i holes.\n", polygon.size(), holes.size());
 
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
 	vertices = new std::vector<Vector2>(/*pan->size()*/);	
 	indices = new std::vector<int>(/*(pan->size() + (holes.size() - 1) * 2) * 3*/);
 
-	printf("Created list of %i points in the entire polygon.\n", pan->size());
+	//printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
 
 	Vector2 line, bar1, bar2;
 	float ang;
@@ -72,9 +67,6 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			}
 		}
 	}
-
-	int stop1 = clock() - start;
-	printf("Found all neighbours in %i millis.\n", stop1);
 
 	// Add all vertices
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
@@ -146,10 +138,6 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			}
 		}
 	}
-
-	unsigned int stop = clock() - start;
-	printf("Done in %i millis.\n", stop);
-	//return forbiddenLines;
 }
 
 std::vector<EdgeVec2*> *Triangulator::createForbiddenLines(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {
@@ -202,9 +190,7 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 		int start = result->size();
 		int end = start + holes.at(i)->size() - 1;
 		for (std::vector<Vector2>::size_type j = holes.at(i)->size(); j-- > 0;) {
-
-			printf("Adding point %i of hole %i of %i.\n", j, i, holes.at(i)->size());
-			
+		
 			if (j == 0) {
 				Vector2 a = holes.at(i)->at(j);
 				Vector2 b = holes.at(i)->at(j + 1);

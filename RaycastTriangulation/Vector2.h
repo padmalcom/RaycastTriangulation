@@ -37,7 +37,7 @@ public:
 			double arc1 = atan2(0.0f, -1.0f) - atan2(v1Norm.y, v1Norm.x);
 			double arc2 = atan2(0.0f, -1.0f) - atan2(v2Norm.y, v2Norm.x);
 
-			return (arc1 > arc2);
+			return (arc1 < arc2);
 		}
 	};
 };

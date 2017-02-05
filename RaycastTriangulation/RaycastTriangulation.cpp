@@ -3,6 +3,7 @@
 #define NO_STDIO_REDIRECT
 #include "stdafx.h"
 #include <ctime>
+#include <fstream>
 
 #include "Vector2.h"
 #include "Triangulator.h"
@@ -20,7 +21,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 0;
 	}
 
-	
 	if (argc == 4) {
 		std::wstring wtype(argv[3]);
 		std::string type(wtype.begin(), wtype.end());
@@ -42,6 +42,17 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::string output(wout.begin(), wout.end());
 
 	printf("Reading input file %s...\n", input.c_str());
+
+
+	std::ifstream inputFile(input.c_str());
+	if (!inputFile.good()) {
+		printf("Cannot read input file. Exit.\n");
+		return 0;
+	}
+	else {
+		printf("File is good.\n");
+	}
+
 
 	TriangleIO::readPolygon(input, polygon, holes);
 

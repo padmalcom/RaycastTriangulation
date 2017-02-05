@@ -31,6 +31,8 @@ void TriangleIO::readPolygon(std::string &fileName, std::vector<Vector2> &polygo
 		while(std::getline(myfile, line)) {
 			if (line.length() == 0) continue;
 
+			if (line.at(0) == '#') continue;
+
 			std::vector<std::string> words;
 			split(line, std::string(","), words);
 

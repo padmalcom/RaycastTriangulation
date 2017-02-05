@@ -13,29 +13,17 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	vertices = new std::vector<Vector2>(/*pan->size()*/);	
 	indices = new std::vector<int>(/*(pan->size() + (holes.size() - 1) * 2) * 3*/);
 
-	printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
+	//printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
 
-	Vector2 line, bar1, bar2;
-	double ang;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
 
-			//printf("-Checking connection from point %i at (%f,%f) to point %i at (%f,%f).\n", i, pan->at(i).p->x, pan->at(i).p->y, j, pan->at(j).p->x, pan->at(j).p->y);
+			//printf("-Checking connection from point %i at (%f,%f) to point %i at (%f,%f).\n", i, pan->at(i)->p->x, pan->at(i)->p->y, j, pan->at(j)->p->x, pan->at(j)->p->y);
 
 			// No lines to direct neighbours
 			if (*(pan->at(j)->p) == *(pan->at(i)->next) || *(pan->at(j)->p) == *(pan->at(i)->prev)) {
 				//printf("--Points %i and %i are neighbours. Continuing.\n", i, j);
-				continue;
-			}
-
-			// No angles for line drawing are allowed that are not between the angle between both intermediate neighbours
-			line = *pan->at(j)->p - *pan->at(i)->p;
-			bar1 = *pan->at(i)->prev - *pan->at(i)->p;
-			bar2 = *pan->at(i)->next - *pan->at(i)->p;
-
-			if (!Vector2::isLineInBetweenVectors(bar1, bar2, line)) {
-				//printf("--Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n", line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
 				continue;
 			}
 
@@ -44,7 +32,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
 					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(*(intersectionPoint) == *(pan->at(i)->p) || *(intersectionPoint) == *(pan->at(j)->p))) {
-						//printf("Line (%f,%f) -> (%f,%f) intersects with line (%f,%f)->(%f,%f) at (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y,
+						//printf("Line (%f,%f) -> (%f,%f) intersects with line (%f,%f)->(%f,%f) at (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y,
 						//	pan->at(j)->p->x, pan->at(j)->p->y, pan->at(k)->p->x, pan->at(k)->p->y, pan->at(k)->neighbours.at(l)->p->x, pan->at(k)->neighbours.at(l)->p->y,
 						//	intersectionPoint->x, intersectionPoint->y);
 						lineIntersects = true;
@@ -75,7 +63,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 		}
 	}*/
 
-	int tris = 0, p1, p2, p3;
+	int p1, p2, p3;
 	bool pointInTris = false;
 
 	for (std::vector<PointAndNeighbours*>::size_type i = 0; i < pan->size(); i++) {
@@ -131,21 +119,24 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 						//printf("Found triangle at %i,%i,%i.\n", a->neighbours.at(j)->index, b->neighbours.at(k)->index, c->neighbours.at(l)->index);
 
-						for (std::vector<PointAndNeighbours>::size_type m = 0; m < pan->size(); m++) {
+						// If there are holes within the polygon, check that there is no hole within the current triangle.
+						if (holes.size() > 0) {
+							for (std::vector<PointAndNeighbours>::size_type m = 0; m < pan->size(); m++) {
 
-							if (pan->at(m)->index == a->neighbours.at(j)->index ||
-								pan->at(m)->index == b->neighbours.at(k)->index ||
-								pan->at(m)->index == c->neighbours.at(l)->index) {
-								continue;
-							}
+								if (pan->at(m)->index == a->neighbours.at(j)->index ||
+									pan->at(m)->index == b->neighbours.at(k)->index ||
+									pan->at(m)->index == c->neighbours.at(l)->index) {
+									continue;
+								}
 
-							if (TinyMath::pointInTriangle(*pan->at(m)->p,
-								vertices->at(a->neighbours.at(j)->index),
-								vertices->at(b->neighbours.at(k)->index),
-								vertices->at(c->neighbours.at(l)->index))) {
-								//printf("Point %i at (%f,%f) is in current triangle. Continuing.\n", m, pan->at(m)->p->x, pan->at(m)->p->y);
-								pointInTris = true;
-								break;
+								if (TinyMath::pointInTriangle(*pan->at(m)->p,
+									vertices->at(a->neighbours.at(j)->index),
+									vertices->at(b->neighbours.at(k)->index),
+									vertices->at(c->neighbours.at(l)->index))) {
+									//printf("Point %i at (%f,%f) is in current triangle. Continuing.\n", m, pan->at(m)->p->x, pan->at(m)->p->y);
+									pointInTris = true;
+									break;
+								}
 							}
 						}
 

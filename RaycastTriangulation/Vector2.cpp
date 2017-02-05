@@ -44,18 +44,6 @@ double Vector2::length() {
 	return sqrtf(this->x * this->x + this->y * this->y);
 }
 
-
-bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line) {
-
-	//printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f).\n", _line->x, _line->y, _v1->x, _v1->y, _v2->x, _v2->y);
-
-	double ang1 = Vector2::angBetweenVecs(_v1, _v2);
-	double ang2 = Vector2::angBetweenVecs(_v1, _line);
-
-	//printf("Angle 1 %f is and Angle 2 is %f.\n", ang1, ang2);
-	return ang2 > 0 && ang2 < ang1;
-}
-
 bool Vector2::operator == (const Vector2& v) const {
 	return TinyMath::compareDouble(this->x, v.x) && TinyMath::compareDouble(this->y, v.y);
 	// return this->x == v.x && this->y == v.y;

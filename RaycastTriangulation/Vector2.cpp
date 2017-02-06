@@ -22,17 +22,28 @@ double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 
 	//printf("Normalized 1: (%f, %f) 2: (%f,%f).\n", v1Norm.x, v1Norm.y, v2Norm.x, v2Norm.y);
 	
-	//float angle = (atan2(v2Norm.y, v2Norm.x) - atan2(v1Norm.y, v1Norm.x)) * 180 / PI;
-	double angle = acos(v1Norm.x * v2Norm.x + v1Norm.y * v2Norm.y) * 180 / PI;
+	float angle = (atan2(v2Norm.y, v2Norm.x) - atan2(v1Norm.y, v1Norm.x)) * 180 / PI;
+	//double angle = acos(v1Norm.x * v2Norm.x + v1Norm.y * v2Norm.y) * 180 / PI;
 
 	// Calculate cross product z component
-	double z = TinyMath::crossProductZ(_v1, _v2);
+	/*double z = TinyMath::crossProductZ(_v1, _v2);
 	if (z > 0.0f) {
 		angle = 360.0f - angle;
-	}
+	}*/
+	if (angle < 0) angle += 360; // TODO: Correct?
 
 	//printf("Angle between (%f,%f) and (%f,%f) is %f\n", _v1.x, _v1.y, _v2.x, _v2.y, angle);
 	return angle;
+}
+
+bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line) {
+	printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f).\n", _line.x, _line.y, _v1.x, _v1.y, _v2.x, _v2.y);
+		
+	double ang1 = Vector2::angBetweenVecs(_v1, _v2);
+	double ang2 = Vector2::angBetweenVecs(_v1, _line);
+	
+	printf("Angle 1 %f is and Angle 2 is %f.\n", ang1, ang2);
+	return ang2 > 0 && ang2 < ang1;	
 }
 
 Vector2 Vector2::normalize() {

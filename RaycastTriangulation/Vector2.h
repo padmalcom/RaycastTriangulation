@@ -13,6 +13,7 @@ public:
 	double x, y;
 
 	static double angBetweenVecs(Vector2 &_v1, Vector2 &_v2);
+	static bool isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line);
 	
 	Vector2 normalize();
 	double length();

@@ -15,6 +15,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 	//printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
 
+	Vector2 line, bar1, bar2;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
@@ -24,6 +25,15 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			// No lines to direct neighbours
 			if (*(pan->at(j)->p) == *(pan->at(i)->next) || *(pan->at(j)->p) == *(pan->at(i)->prev)) {
 				//printf("--Points %i and %i are neighbours. Continuing.\n", i, j);
+				continue;
+			}
+
+			line = *pan->at(j)->p - *pan->at(i)->p;
+			bar1 = *pan->at(i)->prev - *pan->at(i)->p;
+			bar2 = *pan->at(i)->next - *pan->at(i)->p;
+
+			if (!Vector2::isLineInBetweenVectors(bar2.normalize(), bar1.normalize(), line.normalize())) {
+				printf("--Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
 				continue;
 			}
 

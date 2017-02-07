@@ -13,6 +13,7 @@ public:
 	static double crossProductZ(const Vector2 &a, const Vector2 &b);
 	static double orientation(const Vector2 &a, const Vector2 &b, const Vector2 &c);
 	static bool pointInTriangle(Vector2 &point, Vector2 &a, Vector2 &b, Vector2 &c);
+	static float cycle(float _x, float _min, float _max);
 
 private:
 	static float sign(const Vector2 &p1, const Vector2 &p2, const Vector2 &p3);

@@ -20,6 +20,16 @@ float TinyMath::sign(const Vector2 &p1, const Vector2 &p2, const Vector2 &p3)
 	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
+float TinyMath::cycle(float _x, float _min, float _max) {
+	while (_x < _min) {
+		_x += _max - _min;
+	}
+	while (_x > _max) {
+		_x -= _max + _min;
+	}
+	return _x;
+}
+
 bool TinyMath::pointInTriangle(Vector2 &point, Vector2 &a, Vector2 &b, Vector2 &c) {
 
 

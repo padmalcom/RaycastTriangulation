@@ -32,8 +32,8 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 			bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
-			if (!Vector2::isLineInBetweenVectors(bar2.normalize(), bar1.normalize(), line.normalize())) {
-				//printf("--Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
+			if (!Vector2::isLineInBetweenVectors(bar1, bar2, line)) {
+				//printf("--Point (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
 				continue;
 			}
 
@@ -66,12 +66,12 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 		//vertices->at(i) = *pan->at(i)->p;
 	}
 
-	/*for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
+	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 		printf("Point % i at (%f,%f) has %i neighbours.\n", i, pan->at(i)->p->x, pan->at(i)->p->y, pan->at(i)->neighbours.size());
 		for (std::vector<Vector2>::size_type j = 0; j < pan->at(i)->neighbours.size(); j++) {
 			printf("\tNeighbour %i at (%f,%f).\n", j, pan->at(i)->neighbours.at(j)->p->x, pan->at(i)->neighbours.at(j)->p->y);
 		}
-	}*/
+	}
 
 	int p1, p2, p3;
 	bool pointInTris = false;

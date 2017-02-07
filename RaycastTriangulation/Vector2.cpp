@@ -36,7 +36,7 @@ double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 }
 
 bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line) {
-	printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f).\n", _line.x, _line.y, _v1.x, _v1.y, _v2.x, _v2.y);
+	printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f) = ", _line.x, _line.y, _v1.x, _v1.y, _v2.x, _v2.y);
 		
 	/*double ang1 = Vector2::angBetweenVecs(_v1, _v2);
 	double ang2 = Vector2::angBetweenVecs(_v1, _line);
@@ -50,16 +50,31 @@ bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line)
 	float cxa = _v2.y * _v1.x - _v2.x * _v1.y;
 	return (axb * axc >= 0) && (cxb * cxa >= 0);*/
 
-	/*float ang1 = Vector2::angBetweenVecs(_v1.normalize(), _line.normalize());
-	float ang2 = Vector2::angBetweenVecs(_v1.normalize(), _v2.normalize());
-	float ang3 = Vector2::angBetweenVecs(_line.normalize(), _v2.normalize());
+	/*float a = Vector2::angBetweenVecs(Vector2(0,-1), _v1.normalize());
+	float b = Vector2::angBetweenVecs(Vector2(0,-1), _v2.normalize());
+	float n = Vector2::angBetweenVecs(Vector2(0,-1), _line.normalize());
 
-	bool res = (ang1 + ang3) == ang2;
-	printf("Ang1: %f, ang2: %f, ang3: %f, result: %i\n", ang1, ang2, ang3, res ? 1 : 0);
-	
+	n = std::fmodf(360 + (fmodf(n,360)),360);
+	a = fmodf(3600000 + a, 360);
+	b = fmodf(3600000 + b, 360);
+
+	printf("Angle n %f, a %f, b %f.\n", n, a, b);
+
+	bool res;
+
+	if (a < b) {
+		res = a <= n && n <= b;
+	}
+	else {
+		res = a <= n || n <= b;
+	}
+	printf("%i\n\n", res ? 1 : 0);
 	return res;*/
 
-
+	float a = Vector2::angBetweenVecs(_v2.normalize(), _v1.normalize());
+	float b = Vector2::angBetweenVecs(_v1.normalize(), _line.normalize());
+	printf("%f %f\n", a, b);
+	return b > 0 && b < a;
 }
 
 Vector2 Vector2::normalize() {

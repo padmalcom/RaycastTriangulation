@@ -32,10 +32,12 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 			bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
-			if (!Vector2::isLineInBetweenVectors(bar1, bar2, line)) {
-				//printf("--Point (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
-				continue;
-			}
+			//if (pan->at(i)->holeId > -1 && pan->at(i)->holeId == pan->at(j)->holeId) {
+				if (!Vector2::isLineInBetweenVectors(bar1, bar2, line)) {
+					//printf("--Point (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
+					continue;
+				}
+			//}
 
 			bool lineIntersects = false;
 			Vector2 *intersectionPoint = NULL;
@@ -204,10 +206,10 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 
 	for (std::vector<Vector2>::size_type i = 0; i < polygon.size(); i++) {
 		if (i == 0) {
-			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(polygon.size() - 1)), new Vector2(polygon.at(i + 1)), result->size(), false));
+			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(polygon.size() - 1)), new Vector2(polygon.at(i + 1)), result->size(), -1));
 		}
 		else if (i == polygon.size() - 1) {
-			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(0)), result->size(), false));
+			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(0)), result->size(), -1));
 			
 			result->at(result->size() - 1)->neighbours.push_back(result->at(0));	
 			result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
@@ -215,7 +217,7 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 			result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
 		}
 		else {
-			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(i + 1)), result->size(), false));
+			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(i + 1)), result->size(), -1));
 			result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 			result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
 		}
@@ -230,7 +232,7 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 				Vector2 a = holes.at(i)->at(j);
 				Vector2 b = holes.at(i)->at(j + 1);
 				Vector2 c = holes.at(i)->at(holes.at(i)->size() - 1);
-				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(b.x, b.y), new Vector2(c.x, c.y), result->size(), true));
+				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(b.x, b.y), new Vector2(c.x, c.y), result->size(), i));
 				
 				result->at(result->size() - 1)->neighbours.push_back(result->at(start));
 				result->at(result->size() - 1)->nextPan = result->at(start);
@@ -242,13 +244,13 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 				Vector2 a = holes.at(i)->at(j);
 				Vector2 e = holes.at(i)->at(0);
 				Vector2 d = holes.at(i)->at(j - 1);
-				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(e.x, e.y), new Vector2(d.x, d.y), result->size(), true));
+				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(e.x, e.y), new Vector2(d.x, d.y), result->size(), i));
 			}
 			else {
 				Vector2 a = holes.at(i)->at(j);
 				Vector2 d = holes.at(i)->at(j - 1);
 				Vector2 e = holes.at(i)->at(0);
-				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(e.x, e.y), new Vector2(d.x, d.y), result->size(), true));
+				result->push_back(new PointAndNeighbours(new Vector2(a.x, a.y), new Vector2(e.x, e.y), new Vector2(d.x, d.y), result->size(), i));
 				result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 				result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
 			}

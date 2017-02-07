@@ -21,18 +21,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	// Should not be
 	/*Vector2 v1 = Vector2(32, 0) - Vector2(32, 30);
 	Vector2 v2 = Vector2(42, 30) - Vector2(32, 30);
-	Vector2 b = Vector2(42, 0) - Vector2(32, 0);*/
+	Vector2 b = Vector2(42, 0) - Vector2(32, 30);*/
 
 	// Should not be
-	/*Vector2 v1(0, 1);
-	Vector2 v2(1, 0);
+	/*Vector2 v1(1, 0);
+	Vector2 v2(0, 1);
 	Vector2 b(-1, -1);*/
-
 	
 	// Should be
-	Vector2 v1 = Vector2(650, 48) - Vector2(-6, 48);
+	/*Vector2 v1 = Vector2(650, 48) - Vector2(-6, 48);
 	Vector2 v2 = Vector2(-6, -6) - Vector2(-6, 48);
-	Vector2 b = Vector2(32, 30) - Vector2(-6, 48);
+	Vector2 b = Vector2(32, 30) - Vector2(-6, 48);*/
+
+	Vector2 v1 = Vector2(30, 0) - Vector2(30, 9);
+	Vector2 v2 = Vector2(10, 9) - Vector2(30, 9);
+	Vector2 b = Vector2(30, 21) - Vector2(30, 9);
 
 	if (Vector2::isLineInBetweenVectors(v1, v2, b)) {
 		printf("Is in between.\n");
@@ -40,7 +43,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	else {
 		printf("Is not.\n");
 	}
-	return 0;
+	//return 0;
 
 	std::vector<Vector2> polygon;
 	std::vector<std::vector<Vector2>*> holes;

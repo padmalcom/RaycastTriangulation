@@ -11,9 +11,9 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Vector2 v1(10, 0);
+	/*Vector2 v1(10, 0);
 	Vector2 v2(0, 10);
-	Vector2 b(5, 5);
+	Vector2 b(11, 0);
 
 	if (Vector2::isLineInBetweenVectors(v1, v2, b)) {
 		printf("Is in between.\n");
@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	else {
 		printf("Is not.\n");
 	}
-	//return 0;
+	return 0;*/
 
 	std::vector<Vector2> polygon;
 	std::vector<std::vector<Vector2>*> holes;

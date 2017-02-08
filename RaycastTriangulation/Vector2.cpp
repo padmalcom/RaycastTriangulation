@@ -36,7 +36,7 @@ double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 }
 
 bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line) {
-	printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f) = ", _line.x, _line.y, _v1.x, _v1.y, _v2.x, _v2.y);
+	//printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f) = ", _line.x, _line.y, _v1.x, _v1.y, _v2.x, _v2.y);
 		
 	/*double ang1 = Vector2::angBetweenVecs(_v1, _v2);
 	double ang2 = Vector2::angBetweenVecs(_v1, _line);
@@ -71,10 +71,12 @@ bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line)
 	printf("%i\n\n", res ? 1 : 0);
 	return res;*/
 
-	float a = Vector2::angBetweenVecs(_v2.normalize(), _v1.normalize());
-	float b = Vector2::angBetweenVecs(_v1.normalize(), _line.normalize());
-	printf("%f %f\n", a, b);
-	return b > 0 && b < a;
+	float a = fmodf(atan2(_line.x, _line.y) - atan2(_v2.x, _v2.y), 360.0f) * 180 / PI;
+	float b = fmodf(atan2(_v1.x, _v1.y) - atan2(_v2.x, _v2.y), 360.0f) * 180 / PI;
+	a = TinyMath::cycle(a, 0, 360);
+	b = TinyMath::cycle(b, 0, 360);
+	//printf("Angle a: %f, angle b: %f. A smaller B?\n.", a, b);
+	return a < b;
 }
 
 Vector2 Vector2::normalize() {

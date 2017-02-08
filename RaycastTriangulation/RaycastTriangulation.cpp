@@ -22,20 +22,46 @@ int _tmain(int argc, _TCHAR* argv[])
 	/*Vector2 v1 = Vector2(32, 0) - Vector2(32, 30);
 	Vector2 v2 = Vector2(42, 30) - Vector2(32, 30);
 	Vector2 b = Vector2(42, 0) - Vector2(32, 30);*/
-
-	// Should not be
-	/*Vector2 v1(1, 0);
-	Vector2 v2(0, 1);
-	Vector2 b(-1, -1);*/
 	
-	// Should be
-	/*Vector2 v1 = Vector2(650, 48) - Vector2(-6, 48);
-	Vector2 v2 = Vector2(-6, -6) - Vector2(-6, 48);
+	// Should be (poly vertex to hole vertex -> poly change v2 and v1)
+	/*Vector2 v2 = Vector2(650, 48) - Vector2(-6, 48);
+	Vector2 v1 = Vector2(-6, -6) - Vector2(-6, 48);
 	Vector2 b = Vector2(32, 30) - Vector2(-6, 48);*/
 
-	Vector2 v1 = Vector2(30, 0) - Vector2(30, 9);
+	// Should be (hole vertex to hole vertex)
+	/*Vector2 v1 = Vector2(30, 0) - Vector2(30, 9);
 	Vector2 v2 = Vector2(10, 9) - Vector2(30, 9);
-	Vector2 b = Vector2(30, 21) - Vector2(30, 9);
+	Vector2 b = Vector2(30, 21) - Vector2(30, 9);*/
+
+	/* Simple rect */
+
+	// Next first, should, is
+	/*Vector2 v1 = Vector2(10, -10) - Vector2(-10, -10);
+	Vector2 v2 = Vector2(-10, 10) - Vector2(-10, -10);
+	Vector2 b = Vector2(0, 0) - Vector2(-10, -10);*/
+	
+	// Next first, should, is
+	/*Vector2 v1 = Vector2(10, 10) - Vector2(10, -10);
+	Vector2 v2 = Vector2(-10, -10) - Vector2(10, -10);
+	Vector2 b = Vector2(0, 0) - Vector2(10, -10);*/
+
+	// Next first, should, is
+	/*Vector2 v1 = Vector2(-10, 10) - Vector2(10, 10);
+	Vector2 v2 = Vector2(10, -10) - Vector2(10, 10);
+	Vector2 b = Vector2(0, 0) - Vector2(10, 10);*/
+
+	// Next first, should, is
+	/*Vector2 v1 = Vector2(-10, -10) - Vector2(-10, 10);
+	Vector2 v2 = Vector2(10, 10) - Vector2(-10, 10);
+	Vector2 b = Vector2(-20, 10) - Vector2(-10, 10);*/
+
+	/* C-Shape */
+	Vector2 v1 = Vector2(20, 20) - Vector2(20, 10);
+	Vector2 v2 = Vector2(0, 10) - Vector2(20, 10);
+	Vector2 b = Vector2(0, 20) - Vector2(20, 10);
+
+
+
 
 	if (Vector2::isLineInBetweenVectors(v1, v2, b)) {
 		printf("Is in between.\n");
@@ -83,10 +109,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		printf("Cannot read input file. Exit.\n");
 		return 0;
 	}
-	else {
-		printf("File is good.\n");
-	}
-
 
 	TriangleIO::readPolygon(input, polygon, holes);
 

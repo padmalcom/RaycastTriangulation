@@ -37,39 +37,6 @@ double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 
 bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line) {
 	//printf("Checking if (%f,%f) is between (%f,%f) and (%f,%f) = ", _line.x, _line.y, _v1.x, _v1.y, _v2.x, _v2.y);
-		
-	/*double ang1 = Vector2::angBetweenVecs(_v1, _v2);
-	double ang2 = Vector2::angBetweenVecs(_v1, _line);
-	
-	printf("Angle 1 %f is and Angle 2 is %f.\n", ang1, ang2);
-	return ang2 > 0 && ang2 < ang1;*/
-
-	/*float axb = _v1.y * _line.x - _v1.x * _line.y;
-	float axc = _v1.y * _v2.x - _v1.x * _v2.y;
-	float cxb = _v2.y * _line.x - _v2.x * _line.y;
-	float cxa = _v2.y * _v1.x - _v2.x * _v1.y;
-	return (axb * axc >= 0) && (cxb * cxa >= 0);*/
-
-	/*float a = Vector2::angBetweenVecs(Vector2(0,-1), _v1.normalize());
-	float b = Vector2::angBetweenVecs(Vector2(0,-1), _v2.normalize());
-	float n = Vector2::angBetweenVecs(Vector2(0,-1), _line.normalize());
-
-	n = std::fmodf(360 + (fmodf(n,360)),360);
-	a = fmodf(3600000 + a, 360);
-	b = fmodf(3600000 + b, 360);
-
-	printf("Angle n %f, a %f, b %f.\n", n, a, b);
-
-	bool res;
-
-	if (a < b) {
-		res = a <= n && n <= b;
-	}
-	else {
-		res = a <= n || n <= b;
-	}
-	printf("%i\n\n", res ? 1 : 0);
-	return res;*/
 
 	float a = fmodf(atan2(_line.x, _line.y) - atan2(_v2.x, _v2.y), 360.0f) * 180 / PI;
 	float b = fmodf(atan2(_v1.x, _v1.y) - atan2(_v2.x, _v2.y), 360.0f) * 180 / PI;
@@ -77,7 +44,7 @@ bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line)
 	float cross1 = TinyMath::crossProductZ(_line, _v2);
 	float cross2 = TinyMath::crossProductZ(_v1, _v2);
 	if (cross1 > 0) {
-		if (cross2 < 0) {
+		if (cross2 <= 0) {
 			a = 360.0f - a;
 		}
 	}
@@ -86,18 +53,6 @@ bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line)
 			b = 360.0f - b;
 		}
 	}
-
-	/*float dotA = _v1.x * _line.x + _v1.y * _line.y;
-	float detA = _v1.x * _line.y + _v1.y * _line.x;
-	float angA = atan2(detA, dotA);
-
-	float dotB = _v1.x * _v2.x + _v1.y * _v2.y;
-	float detB = _v1.x * _v2.y + _v1.y * _v2.x;
-	float angB = atan2(detB, dotB);*/
-
-
-	//a = TinyMath::cycle(a, 0, 360);
-	//b = TinyMath::cycle(b, 0, 360);
 
 	//printf("Angle a: %f, angle b: %f. A smaller B? Cross a: %f, cross b: %f\n\n.", a, b, cross1, cross2);
 	return a < b;

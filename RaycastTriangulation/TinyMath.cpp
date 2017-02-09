@@ -2,7 +2,7 @@
 #include "TinyMath.h"
 
 bool TinyMath::compareDouble(double a, double b) {
-	return fabs(a - b) < EPSILON;
+	return fabs(a - b) < 0.001f;
 }
 
 double TinyMath::crossProductZ(const Vector2 &a, const Vector2 &b) {

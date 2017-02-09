@@ -46,19 +46,20 @@ int _tmain(int argc, _TCHAR* argv[])
 	Vector2 b = Vector2(0, 0) - Vector2(10, -10);*/
 
 	// Next first, should, is
-	/*Vector2 v1 = Vector2(-10, 10) - Vector2(10, 10);
+	Vector2 v1 = Vector2(-10, 10) - Vector2(10, 10);
 	Vector2 v2 = Vector2(10, -10) - Vector2(10, 10);
-	Vector2 b = Vector2(0, 0) - Vector2(10, 10);*/
+	Vector2 b = Vector2(0, 0) - Vector2(10, 10);
 
 	// Next first, should, is
 	/*Vector2 v1 = Vector2(-10, -10) - Vector2(-10, 10);
 	Vector2 v2 = Vector2(10, 10) - Vector2(-10, 10);
 	Vector2 b = Vector2(-20, 10) - Vector2(-10, 10);*/
 
-	/* C-Shape */
-	Vector2 v1 = Vector2(20, 20) - Vector2(20, 10);
-	Vector2 v2 = Vector2(0, 10) - Vector2(20, 10);
-	Vector2 b = Vector2(0, 20) - Vector2(20, 10);
+	/* Sharp */
+	// Next first, should, is
+	/*Vector2 v1 = Vector2(20, 20) - Vector2(10, 0);
+	Vector2 v2 = Vector2(0, 20) - Vector2(10, 0);
+	Vector2 b = Vector2(10, -20) - Vector2(10, 0);*/
 
 
 

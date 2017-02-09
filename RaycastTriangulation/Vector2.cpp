@@ -73,9 +73,22 @@ bool Vector2::isLineInBetweenVectors(Vector2 &_v1, Vector2 &_v2, Vector2 &_line)
 
 	float a = fmodf(atan2(_line.x, _line.y) - atan2(_v2.x, _v2.y), 360.0f) * 180 / PI;
 	float b = fmodf(atan2(_v1.x, _v1.y) - atan2(_v2.x, _v2.y), 360.0f) * 180 / PI;
-	a = TinyMath::cycle(a, 0, 360);
-	b = TinyMath::cycle(b, 0, 360);
-	//printf("Angle a: %f, angle b: %f. A smaller B?\n.", a, b);
+	//a = TinyMath::cycle(a, 0, 360);
+	//b = TinyMath::cycle(b, 0, 360);
+	float cross1 = TinyMath::crossProductZ(_line, _v2);
+	float cross2 = TinyMath::crossProductZ(_v1, _v2);
+	if (cross1 > 0) {
+		if (cross2 < 0) {
+			a = 360.0f - a;
+		}
+	}
+	if (cross2 > 0) {
+		if (cross1 < 0) {
+			b = 360.0f - b;
+		}
+	}
+
+	//printf("Angle a: %f, angle b: %f. A smaller B? Cross a: %f, cross b: %f\n.", a, b, cross1, cross2);
 	return a < b;
 }
 

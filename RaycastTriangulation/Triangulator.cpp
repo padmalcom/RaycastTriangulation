@@ -29,11 +29,11 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			}
 
 			// Polygons scan to inner and outer, holes only to outer.
-			if (pan->at(i)->holeId > -1) {
+			if (pan->at(i)->holeId > -1 && pan->at(j)->holeId == pan->at(i)->holeId) {
 				line = *pan->at(j)->p - *pan->at(i)->p;
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
-				if (!Vector2::isLineInBetweenVectors(bar1, bar2, line)) {
+				if (!Vector2::isLineInBetweenVectors(bar2, bar1, line)) {
 					//printf("--Point (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
 					continue;
 				}

@@ -33,6 +33,13 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				line = *pan->at(j)->p - *pan->at(i)->p;
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
+
+				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) {
+					Vector2 tmp = bar1;
+					bar1 = bar2;
+					bar2 = tmp;
+				}
+
 				if (!Vector2::isLineInBetweenVectors(bar2, bar1, line)) {
 					//printf("--Point (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
 					continue;

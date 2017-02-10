@@ -5,7 +5,7 @@
 #include <algorithm>
 
 
-void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices, bool _debug)
+void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices, bool _debug, bool _clockwise)
 {
 	int idxCnt = 0;
 
@@ -34,7 +34,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
-				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) {
+				if (TinyMath::crossProductZ(bar1, bar2) >= 0.0f) { // TODO: Was >
 					Vector2 tmp = bar1;
 					bar1 = bar2;
 					bar2 = tmp;
@@ -172,12 +172,22 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 								std::swap(p1, p2);
 							}
 
-							if (!containsTriangle(*indices, p1, p2, p3)) {
-								indices->push_back(p1);
-								indices->push_back(p2);
-								indices->push_back(p3);
+							if (!containsTriangle(*indices, p1, p2, p3, _clockwise)) {
 
-								if (_debug) printf("\t\t\t\tAdding triangle with vertices %i, %i and %i to index array.\n", p1, p2, p3);
+								if (_clockwise) {
+									indices->push_back(p1);
+									indices->push_back(p2);
+									indices->push_back(p3);
+
+									if (_debug) printf("\t\t\t\tAdding triangle with vertices %i, %i and %i to index array (clockwise).\n", p1, p2, p3);
+								}
+								else {
+									indices->push_back(p3);
+									indices->push_back(p2);
+									indices->push_back(p1);
+
+									if (_debug) printf("\t\t\t\tAdding triangle with vertices %i, %i and %i to index array (counter clockwise).\n", p1, p2, p3);
+								}
 							}
 							else {
 								if (_debug) printf("\t\t\t\tTriangle with indices %i, %i and %i is already in index array.\n", p1, p2, p3);
@@ -272,16 +282,30 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 	return result;
 }
 
-bool Triangulator::containsTriangle(std::vector<int> &indices, int a, int b, int c)
+bool Triangulator::containsTriangle(std::vector<int> &indices, int a, int b, int c, bool _clockwise)
 {
-	for (std::vector<int>::size_type i = 0; i<indices.size(); i += 3)
-	{
-		if ((indices.at(i) == a && indices.at(i + 1) == b && indices.at(i + 2) == c) ||
-			(indices.at(i) == b && indices.at(i + 1) == c && indices.at(i + 2) == a) ||
-			(indices.at(i) == c && indices.at(i + 1) == a && indices.at(i + 2) == b)
-			)
+	if (_clockwise) {
+		for (std::vector<int>::size_type i = 0; i < indices.size(); i += 3)
 		{
-			return true;
+			if ((indices.at(i) == a && indices.at(i + 1) == b && indices.at(i + 2) == c) ||
+				(indices.at(i) == b && indices.at(i + 1) == c && indices.at(i + 2) == a) ||
+				(indices.at(i) == c && indices.at(i + 1) == a && indices.at(i + 2) == b)
+				)
+			{
+				return true;
+			}
+		}
+	}
+	else {
+		for (std::vector<int>::size_type i = 0; i < indices.size(); i += 3)
+		{
+			if ((indices.at(i) == c && indices.at(i + 1) == b && indices.at(i + 2) == a) ||
+				(indices.at(i) == b && indices.at(i + 1) == a && indices.at(i + 2) == c) ||
+				(indices.at(i) == a && indices.at(i + 1) == c && indices.at(i + 2) == b)
+				)
+			{
+				return true;
+			}
 		}
 	}
 	return false;

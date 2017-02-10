@@ -26,18 +26,20 @@ int _tmain(int argc, _TCHAR* argv[])
 	bool circle = false;
 	int circleCount = -1;
 	bool debug = false;
+	bool outputClockwise = true;
 	for (int i = 0; i < argc; i++) {
 		std::wstring wtype(argv[i]);
 		std::string value(wtype.begin(), wtype.end());
 		arguments.push_back(value);
 		if (value == "--help" || value == "-h") {
-			printf("--help or -h: Print help\n");
-			printf("-i: Input file\n");
-			printf("-o: Output file(Required)\n");
-			printf("-c: Calculate circular mesh(Requires - cc\n");
-			printf("-cc: Circle point count (Must be larger at least 3).\n");
-			printf("-f: Output format(Required, 'list' or array')\n");
-			printf("-d: Debug output\n");
+			printf("--help or -h: print this help text\n");
+			printf("-i: input file\n");
+			printf("-o: output file(required)\n");
+			printf("-r: reverse triangle order (default: clockwise, if specified counter clockwise)\n");
+			printf("-c: calculate circular mesh(requires - cc\n");
+			printf("-cc: circle point count (must be larger at least 3).\n");
+			printf("-f: output format(required, 'list' or array')\n");
+			printf("-d: debug output\n");
 			return 0;
 		}
 	}
@@ -82,6 +84,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		else if (arguments.at(i) == "-c") {
 			circle = true;
+		}
+		else if (arguments.at(i) == "-r") {
+			outputClockwise = false;
 		}
 		else if (arguments.at(i) == "-cc") {
 			if (i < arguments.size() - 1) {
@@ -143,7 +148,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::vector<int> *indices = NULL;
 
 	printf("Starting triangulation ...\n");
-	Triangulator::triangulate(polygon, holes, indices, vertices, debug);
+	Triangulator::triangulate(polygon, holes, indices, vertices, debug, outputClockwise);
 
 	unsigned int stop = clock() - start;
 

@@ -31,10 +31,6 @@ float TinyMath::cycle(float _x, float _min, float _max) {
 }
 
 bool TinyMath::pointInTriangle(Vector2 &point, Vector2 &a, Vector2 &b, Vector2 &c) {
-
-
-//bool PointInTriangle(fPoint pt, fPoint v1, fPoint v2, fPoint v3)
-//{
 	bool b1, b2, b3;
 
 	b1 = TinyMath::sign(point, a, b) < 0.0f;

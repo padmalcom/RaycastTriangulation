@@ -17,6 +17,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 	Vector2 line, bar1, bar2;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
+
+		// Add all vertices
+		vertices->push_back(*pan->at(i)->p);
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
 
@@ -69,11 +72,6 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				if (_debug) printf("\tAdding line from (%f, %f) to (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, pan->at(j)->p->x, pan->at(j)->p->y);
 			}
 		}
-	}
-
-	// Add all vertices
-	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
-		vertices->push_back(*pan->at(i)->p);
 	}
 
 	if (_debug) {
@@ -198,30 +196,6 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			}
 		}
 	}
-}
-
-std::vector<EdgeVec2*> *Triangulator::createForbiddenLines(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {
-	std::vector<EdgeVec2*> *result = new std::vector<EdgeVec2*>();
-	for (std::vector<Vector2>::size_type i = 0; i < polygon.size(); i++) {
-		if (i < polygon.size() - 1) {
-			result->push_back(new EdgeVec2(polygon.at(i), polygon.at(i + 1), true));
-		}
-		else {
-			result->push_back(new EdgeVec2(polygon.at(i), polygon.at(0), true));
-		}
-	}
-
-	for (std::vector<Vector2>::size_type i = 0; i < holes.size(); i++) {
-		for (std::vector<Vector2>::size_type j = 0; j < holes.at(i)->size(); j++) {
-			if (j < holes.at(i)->size() - 1) {
-				result->push_back(new EdgeVec2(holes.at(i)->at(j), holes.at(i)->at(j + 1), true));
-			}
-			else {
-				result->push_back(new EdgeVec2(holes.at(i)->at(j), holes.at(i)->at(0), true));
-			}
-		}
-	}
-	return result;
 }
 
 std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {

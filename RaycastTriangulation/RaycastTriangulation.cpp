@@ -117,7 +117,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (circleCount > 2) {
 			int step = 360 / circleCount;
 			printf("Drawing circle with %i points.\n", circleCount);
-			for (float i = 0; i < 360.0f; i += 6) {
+			for (float i = 0; i < 360.0f; i += step) {
 				float x = 1000 * cos(i * PI / 180.0f);
 				float y = 1000 * sin(i * PI / 180.0f);
 				polygon.push_back(Vector2(x, y));

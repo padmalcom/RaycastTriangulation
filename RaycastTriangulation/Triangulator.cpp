@@ -7,8 +7,6 @@
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices, bool _debug, bool _clockwise)
 {
-	int idxCnt = 0;
-
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
 	vertices = new std::vector<Vector2>();	
 	indices = new std::vector<int>();
@@ -31,13 +29,13 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				continue;
 			}
 
-			// Polygons scan to inner and outer, holes only to outer.
-			if (pan->at(i)->holeId > -1 && pan->at(j)->holeId == pan->at(i)->holeId) {
+			// Polygons scan to inner, holes to outer.
+			if ((pan->at(i)->holeId > -1 && pan->at(j)->holeId == pan->at(i)->holeId) || (pan->at(i)->holeId == -1)) {
 				line = *pan->at(j)->p - *pan->at(i)->p;
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
-				if (TinyMath::crossProductZ(bar1, bar2) >= 0.0f) { // TODO: Was >
+				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) { // TODO: Was >
 					Vector2 tmp = bar1;
 					bar1 = bar2;
 					bar2 = tmp;

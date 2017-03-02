@@ -7,17 +7,24 @@
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices, bool _debug, bool _clockwise)
 {
-	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
+	bool hasReflexAngle = false;
+	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes, hasReflexAngle);
 	vertices = new std::vector<Vector2>();	
 	indices = new std::vector<int>();
 
 	printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
 
-	Vector2 line, bar1, bar2;
+	Vector2 line, bar1, bar2, tmp;
+	Vector2 *intersectionPoint = NULL;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		// Add all vertices
 		vertices->push_back(*pan->at(i)->p);
+
+		// If the current angle is acure, right or obtuse and if we have at least one reflex angle -> continue
+		if ((hasReflexAngle || holes.size() > 0) && (pan->at(i)->angle <= 180.0f)) {
+			//continue;
+		}
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
 
@@ -36,7 +43,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
 				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) { // TODO: Was >
-					Vector2 tmp = bar1;
+					tmp = bar1;
 					bar1 = bar2;
 					bar2 = tmp;
 				}
@@ -48,7 +55,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			}
 
 			bool lineIntersects = false;
-			Vector2 *intersectionPoint = NULL;
+			intersectionPoint = NULL;
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
 					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(*(intersectionPoint) == *(pan->at(i)->p) || *(intersectionPoint) == *(pan->at(j)->p))) {
@@ -127,30 +134,28 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 					}
 				
 					if (*(d->p) == *(a->p)) {
+
+						p1 = a->neighbours.at(j)->index;
+						p2 = b->neighbours.at(k)->index;
+						p3 = c->neighbours.at(l)->index;
+
 						if (_debug) {
 							printf("\t\t\t\tFound triangle at points(%f,%f), (%f,%f) and (%f,%f).\n",
-								vertices->at(a->neighbours.at(j)->index).x,
-								vertices->at(a->neighbours.at(j)->index).y,
-								vertices->at(b->neighbours.at(k)->index).x,
-								vertices->at(b->neighbours.at(k)->index).y,
-								vertices->at(c->neighbours.at(l)->index).x,
-								vertices->at(c->neighbours.at(l)->index).y);
+								vertices->at(p1).x, vertices->at(p1).y,
+								vertices->at(p2).x, vertices->at(p2).y,
+								vertices->at(p3).x, vertices->at(p3).y);
 						}
 
 						// If there are holes within the polygon, check that there is no hole within the current triangle.
 						if (holes.size() > 0) {
 							for (std::vector<PointAndNeighbours>::size_type m = 0; m < pan->size(); m++) {
 
-								if (pan->at(m)->index == a->neighbours.at(j)->index ||
-									pan->at(m)->index == b->neighbours.at(k)->index ||
-									pan->at(m)->index == c->neighbours.at(l)->index) {
+								// Point to check may not be one of the three triangle points
+								if (pan->at(m)->index == p1 || pan->at(m)->index == p2 || pan->at(m)->index == p3) {
 									continue;
 								}
 
-								if (TinyMath::pointInTriangle(*pan->at(m)->p,
-									vertices->at(a->neighbours.at(j)->index),
-									vertices->at(b->neighbours.at(k)->index),
-									vertices->at(c->neighbours.at(l)->index))) {
+								if (TinyMath::pointInTriangle(*pan->at(m)->p, vertices->at(p1), vertices->at(p2), vertices->at(p3))) {
 									if (_debug) printf("\t\t\t\tPoint %i at (%f,%f) is in current triangle so triangle cannot be closed. Continuing.\n", m, pan->at(m)->p->x, pan->at(m)->p->y);
 									pointInTris = true;
 									break;
@@ -159,11 +164,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 						}
 
 						if (!pointInTris) {
-
-							p1 = a->neighbours.at(j)->index;
-							p2 = b->neighbours.at(k)->index;
-							p3 = c->neighbours.at(l)->index;
-
+							
 							if (TinyMath::orientation(vertices->at(p1), vertices->at(p2), vertices->at(p3)) >= 0.0f) {
 								std::swap(p1, p2);
 							}
@@ -196,8 +197,11 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	}
 }
 
-std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {
+std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, bool &hasReflexAngle) {
 	std::vector<PointAndNeighbours*> *result = new std::vector<PointAndNeighbours*>();
+
+	// Validate if any angle in the outer polygon is larger than 180 degree.
+	hasReflexAngle = false;
 
 	for (std::vector<Vector2>::size_type i = 0; i < polygon.size(); i++) {
 		if (i == 0) {
@@ -215,6 +219,10 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(i + 1)), result->size(), -1));
 			result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 			result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
+		}
+
+		if (result->at(result->size() - 1)->angle > 180.0f) {
+			hasReflexAngle = true;
 		}
 	}
 	for (std::vector<std::vector<Vector2>*>::size_type i = 0; i < holes.size(); i++) {

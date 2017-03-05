@@ -7,8 +7,7 @@
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices, bool _debug, bool _clockwise)
 {
-	bool hasReflexAngle = false;
-	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes, hasReflexAngle);
+	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
 	vertices = new std::vector<Vector2>();	
 	indices = new std::vector<int>();
 
@@ -20,11 +19,6 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 		// Add all vertices
 		vertices->push_back(*pan->at(i)->p);
-
-		// If the current angle is acure, right or obtuse and if we have at least one reflex angle -> continue
-		if ((hasReflexAngle || holes.size() > 0) && (pan->at(i)->angle <= 180.0f)) {
-			//continue;
-		}
 		
 		for (std::vector<PointAndNeighbours>::size_type j = i + 1; j < pan->size(); j++) {
 
@@ -42,7 +36,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
-				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) { // TODO: Was >
+				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) {
 					tmp = bar1;
 					bar1 = bar2;
 					bar2 = tmp;
@@ -197,11 +191,8 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	}
 }
 
-std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, bool &hasReflexAngle) {
+std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes) {
 	std::vector<PointAndNeighbours*> *result = new std::vector<PointAndNeighbours*>();
-
-	// Validate if any angle in the outer polygon is larger than 180 degree.
-	hasReflexAngle = false;
 
 	for (std::vector<Vector2>::size_type i = 0; i < polygon.size(); i++) {
 		if (i == 0) {
@@ -219,10 +210,6 @@ std::vector<PointAndNeighbours*> *Triangulator::createPointsAndNeighbours(std::v
 			result->push_back(new PointAndNeighbours(new Vector2(polygon.at(i)), new Vector2(polygon.at(i - 1)), new Vector2(polygon.at(i + 1)), result->size(), -1));
 			result->at(result->size() - 2)->neighbours.push_back(result->at(result->size() - 1));
 			result->at(result->size() - 2)->nextPan = result->at(result->size() - 1);
-		}
-
-		if (result->at(result->size() - 1)->angle > 180.0f) {
-			hasReflexAngle = true;
 		}
 	}
 	for (std::vector<std::vector<Vector2>*>::size_type i = 0; i < holes.size(); i++) {

@@ -30,7 +30,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				continue;
 			}
 
-			// Polygons scan to inner, holes to outer.
+			// Polygons scan to inner, points of similar holes to outer.
 			if ((pan->at(i)->holeId > -1 && pan->at(j)->holeId == pan->at(i)->holeId) || (pan->at(i)->holeId == -1)) {
 				line = *pan->at(j)->p - *pan->at(i)->p;
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
@@ -111,7 +111,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				
 
 				// If angle a -> b -> c >= 180° => continue since not clockwise. TODO: Measure what's faster. TO compare or to sort?
-				if (Vector2::angBetweenVecs(*a->p - *b->p, *c->p - *b->p) >= 180) {
+				if ((Vector2::angBetweenVecs(*a->p - *b->p, *c->p - *b->p) >= 180) ||
+					(Vector2::angBetweenVecs(*c->p - *a->p, *b->p - *a->p) >= 180) ||
+					(Vector2::angBetweenVecs(*b->p - *c->p, *a->p - *c->p) >= 180)) {
 					if (_debug) printf("\t\t\tAngle is not pointing in clockwise order. Skipping.\n");
 					continue;
 				}
@@ -159,9 +161,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 						if (!pointInTris) {
 							
-							if (TinyMath::orientation(vertices->at(p1), vertices->at(p2), vertices->at(p3)) >= 0.0f) {
+							/*if (TinyMath::orientation(vertices->at(p1), vertices->at(p2), vertices->at(p3)) >= 0.0f) {
 								std::swap(p1, p2);
-							}
+							}*/
 
 							if (!containsTriangle(*indices, p1, p2, p3, _clockwise)) {
 

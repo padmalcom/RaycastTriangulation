@@ -115,13 +115,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else if (circle) {
 		if (circleCount > 2) {
-			int step = 360 / circleCount;
 			printf("Drawing circle with %i points.\n", circleCount);
-			for (float i = 0; i < 360.0f; i += step) {
+			double slice = 2 * PI / circleCount;
+			for (int i = 0; i < circleCount; i++) {
+				double angle = slice * i;
+				float x = 1000 * cos(angle);
+				float y = 1000 * sin(angle);
+				polygon.push_back(Vector2(x, y));
+			}
+			
+			/*double step = 360.0f / circleCount;
+			for (double i = 0; i < 360.0f; i += step) {
 				float x = 1000 * cos(i * PI / 180.0f);
 				float y = 1000 * sin(i * PI / 180.0f);
 				polygon.push_back(Vector2(x, y));
-			}
+			}*/
 		}
 		else {
 			printf("Circular polygon defined but '-cc' parameter was not found or smaller than 3.");

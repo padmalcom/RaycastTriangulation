@@ -48,6 +48,8 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				}
 			}
 
+
+
 			bool lineIntersects = false;
 			intersectionPoint = NULL;
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {

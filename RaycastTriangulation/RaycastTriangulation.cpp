@@ -16,7 +16,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::vector<std::vector<Vector2>*> holes;
 	bool asArray = false;
 
-	printf("Raycast Triangulator\n====================\nWritten by Jonas Freiknecht 2017\n\n");
+	printf("Raycast Triangulator\n====================\nWritten by Jonas Freiknecht 2017 (www.jofre.de)\n\n");
 
 	std::vector<std::string> arguments;
 	bool printHelp = false;
@@ -123,13 +123,6 @@ int _tmain(int argc, _TCHAR* argv[])
 				float y = 1000 * sin(angle);
 				polygon.push_back(Vector2(x, y));
 			}
-			
-			/*double step = 360.0f / circleCount;
-			for (double i = 0; i < 360.0f; i += step) {
-				float x = 1000 * cos(i * PI / 180.0f);
-				float y = 1000 * sin(i * PI / 180.0f);
-				polygon.push_back(Vector2(x, y));
-			}*/
 		}
 		else {
 			printf("Circular polygon defined but '-cc' parameter was not found or smaller than 3.");

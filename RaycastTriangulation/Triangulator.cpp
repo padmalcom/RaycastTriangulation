@@ -14,7 +14,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	printf("Expecting %i vertices and %i indices.\n", pan->size(), ((pan->size() + (holes.size() - 1) * 2) * 3));
 
 	Vector2 line, bar1, bar2, tmp;
-	Vector2 *intersectionPoint = NULL;
+	Vector2 intersectionPoint;
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		// Add all vertices
@@ -51,14 +51,13 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 
 			bool lineIntersects = false;
-			intersectionPoint = NULL;
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
-					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(*(intersectionPoint) == *(pan->at(i)->p) || *(intersectionPoint) == *(pan->at(j)->p))) {
+					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(intersectionPoint == *(pan->at(i)->p) || (intersectionPoint == *(pan->at(j)->p)))) {
 						if (_debug) {
 							printf("\t\tLine (%f,%f) -> (%f,%f) intersects with line (%f,%f)->(%f,%f) at (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y,
 								pan->at(j)->p->x, pan->at(j)->p->y, pan->at(k)->p->x, pan->at(k)->p->y, pan->at(k)->neighbours.at(l)->p->x, pan->at(k)->neighbours.at(l)->p->y,
-								intersectionPoint->x, intersectionPoint->y);
+								intersectionPoint.x, intersectionPoint.y);
 						}
 						lineIntersects = true;
 						break;
@@ -66,6 +65,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				}
 				if (lineIntersects) break;
 			}
+
 
 			if (!lineIntersects) {
 				pan->at(i)->neighbours.push_back(pan->at(j));

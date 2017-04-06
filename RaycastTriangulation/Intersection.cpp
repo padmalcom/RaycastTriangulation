@@ -2,7 +2,7 @@
 #include "Intersection.h"
 #include "TinyMath.h"
 
-bool Intersection::line_intersection(Vector2 &_p1, Vector2 &_p2, Vector2 &_p3, Vector2 &_p4, Vector2 *&_intersection) {
+bool Intersection::line_intersection(Vector2 &_p1, Vector2 &_p2, Vector2 &_p3, Vector2 &_p4, Vector2 &_intersection) {
 	double Ax, Bx, Cx, Ay, By, Cy, d, e, f, num;
 	double x1lo, x1hi, y1lo, y1hi;
 
@@ -84,6 +84,6 @@ bool Intersection::line_intersection(Vector2 &_p1, Vector2 &_p2, Vector2 &_p3, V
 	// compute intersection coordinates //
 	num = d * Ax; // numerator //
 
-	_intersection = new Vector2(_p1.x + num / f,_p1.y + d * Ay / f);
+	_intersection = Vector2(_p1.x + num / f,_p1.y + d * Ay / f);
 	return true;
 }

@@ -30,7 +30,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				continue;
 			}
 
-			// Polygons scan to inner, points of similar holes to outer.
+			// Polygons scan to inner, points of the same hole to outer.
 			if ((pan->at(i)->holeId > -1 && pan->at(j)->holeId == pan->at(i)->holeId) || (pan->at(i)->holeId == -1)) {
 				line = *pan->at(j)->p - *pan->at(i)->p;
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
@@ -47,9 +47,8 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 					continue;
 				}
 			}
-
-
-
+			
+			// Check if a ray from i to j intersects with any other line in the graph.
 			bool lineIntersects = false;
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
@@ -66,7 +65,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				if (lineIntersects) break;
 			}
 
-
+			// If the current ray does not intersect with any other line, add i and j as neighbors.
 			if (!lineIntersects) {
 				pan->at(i)->neighbours.push_back(pan->at(j));
 				pan->at(j)->neighbours.push_back(pan->at(i));
@@ -162,10 +161,6 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 						}
 
 						if (!pointInTris) {
-							
-							/*if (TinyMath::orientation(vertices->at(p1), vertices->at(p2), vertices->at(p3)) >= 0.0f) {
-								std::swap(p1, p2);
-							}*/
 
 							if (!containsTriangle(*indices, p1, p2, p3, _clockwise)) {
 

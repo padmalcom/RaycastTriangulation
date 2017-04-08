@@ -78,7 +78,6 @@ bool Intersection::line_intersection(Vector2 &_p1, Vector2 &_p2, Vector2 &_p3, V
 	}
 
 	// check if they are parallel
-	//if (TinyMath::compareDouble(f,0.0f)) return false;
 	if (f == 0.0f) return false;
 
 	// compute intersection coordinates //

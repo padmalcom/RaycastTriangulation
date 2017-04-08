@@ -9,12 +9,6 @@ double TinyMath::crossProductZ(const Vector2 &a, const Vector2 &b) {
 	return a.x * b.y - a.y * b.x;
 }
 
-// Orientation is positive, if a->b->c is counterclockwise.
-// See Shoelace formula: http://en.wikipedia.org/wiki/Shoelace_formula
-double TinyMath::orientation(const Vector2 &a, const Vector2 &b, const Vector2 &c) {
-	return TinyMath::crossProductZ(a, b) + TinyMath::crossProductZ(b, c) + TinyMath::crossProductZ(c, a);
-}
-
 float TinyMath::sign(const Vector2 &p1, const Vector2 &p2, const Vector2 &p3)
 {
 	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);

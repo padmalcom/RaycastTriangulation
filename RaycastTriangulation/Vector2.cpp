@@ -20,9 +20,6 @@ double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 	Vector2 v1Norm = _v1.normalize();
 	Vector2 v2Norm = _v2.normalize();
 
-	//printf("Normalized 1: (%f, %f) 2: (%f,%f).\n", v1Norm.x, v1Norm.y, v2Norm.x, v2Norm.y);
-	
-	//float angle = (atan2(v2Norm.y, v2Norm.x) - atan2(v1Norm.y, v1Norm.x)) * 180 / PI;
 	double angle = acos(v1Norm.x * v2Norm.x + v1Norm.y * v2Norm.y) * 180 / PI;
 
 	// Calculate cross product z component
@@ -31,7 +28,6 @@ double Vector2::angBetweenVecs(Vector2 &_v1, Vector2 &_v2) {
 		angle = 360.0f - angle;
 	}
 
-	//printf("Angle between (%f,%f) and (%f,%f) is %f\n", _v1.x, _v1.y, _v2.x, _v2.y, angle);
 	return angle;
 }
 

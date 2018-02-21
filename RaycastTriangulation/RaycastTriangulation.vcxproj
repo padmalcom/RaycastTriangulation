@@ -80,6 +80,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Downloads\bitmap\bitmap_image.hpp" />
+    <ClInclude Include="Avi.h" />
+    <ClInclude Include="Bitmap.h" />
     <ClInclude Include="EdgeVec2.h" />
     <ClInclude Include="Intersection.h" />
     <ClInclude Include="PointAndNeighbours.h" />
@@ -89,8 +92,11 @@
     <ClInclude Include="TriangleIO.h" />
     <ClInclude Include="Triangulator.h" />
     <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Win32_LastError.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Avi.cpp" />
+    <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="EdgeVec2.cpp" />
     <ClCompile Include="Intersection.cpp" />
     <ClCompile Include="PointAndNeighbours.cpp" />
@@ -103,6 +109,7 @@
     <ClCompile Include="TriangleIO.cpp" />
     <ClCompile Include="Triangulator.cpp" />
     <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="Win32_LastError.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

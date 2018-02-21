@@ -1,11 +1,12 @@
-#include "stdafx.h"
+	#include "stdafx.h"
 #include "Triangulator.h"
 #include "Intersection.h"
 #include "TinyMath.h"
 #include <algorithm>
 
 
-void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices, bool _debug, bool _clockwise)
+void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices,
+	bool _debug, bool _clockwise, std::string videoFile = NULL)
 {
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
 	vertices = new std::vector<Vector2>();	
@@ -52,6 +53,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			bool lineIntersects = false;
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
+
+					// Draw yellow line
+
 					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(intersectionPoint == *(pan->at(i)->p) || (intersectionPoint == *(pan->at(j)->p)))) {
 						if (_debug) {
 							printf("\t\tLine (%f,%f) -> (%f,%f) intersects with line (%f,%f)->(%f,%f) at (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y,
@@ -59,6 +63,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 								intersectionPoint.x, intersectionPoint.y);
 						}
 						lineIntersects = true;
+
+						// Draw red line
+						
 						break;
 					}
 				}
@@ -70,6 +77,8 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				pan->at(i)->neighbours.push_back(pan->at(j));
 				pan->at(j)->neighbours.push_back(pan->at(i));
 				if (_debug) printf("\tAdding line from (%f, %f) to (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, pan->at(j)->p->x, pan->at(j)->p->y);
+
+				// Draw green line
 			}
 		}
 	}

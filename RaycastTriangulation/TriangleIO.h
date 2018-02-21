@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include "Vector2.h"
+#include <windows.h>
+
 class TriangleIO
 {
 public:
@@ -10,5 +12,6 @@ public:
 
 private:
 	static void TriangleIO::split(std::string &line, std::string &delimiter, std::vector<std::string> &strings);
+	static void triangulationStepToBitmap();
 };
 

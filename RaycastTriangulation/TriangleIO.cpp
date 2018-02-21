@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TriangleIO.h"
+#include "Triangulator.h"
 
 #include <fstream>
 #include <string>
@@ -112,4 +113,9 @@ void TriangleIO::writeTriangle(std::string &fileName, std::vector<int> &indices,
 
 		myfile.close();
 	}
+}
+
+void TriangleIO::triangulationStepToBitmap(std::vector<PointAndNeighbours*> *pan = NULL, ) {
+	//http://www.partow.net/programming/bitmap/index.html#simpleexample02
+
 }

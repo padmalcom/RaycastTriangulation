@@ -7,7 +7,7 @@
 
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices,
-	bool _debug, bool _clockwise, std::string videoFile = NULL)
+	bool _debug, bool _clockwise, std::string *_videoFile)
 {
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
 	vertices = new std::vector<Vector2>();	
@@ -19,7 +19,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	Vector2 intersectionPoint;
 	int step = 0;
 
-	TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++), 1024, 768, pan, NULL);
+	if (_videoFile != NULL) TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++), 1024, 768, pan, NULL);
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		// Add all vertices

@@ -117,7 +117,7 @@ void TriangleIO::writeTriangle(std::string &fileName, std::vector<int> &indices,
 	}
 }
 
-void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _height, std::vector<PointAndNeighbours*> *_pan = NULL, std::vector<EdgeVec2> *_vecs = NULL) {
+void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _height, std::vector<PointAndNeighbours*> *_pan, std::vector<EdgeVec2> *_vecs) {
 	//http://www.partow.net/programming/bitmap/index.html#simpleexample02
 
 	// If neither _pan nor _vecs specified, create dummy image

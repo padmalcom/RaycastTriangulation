@@ -2,6 +2,7 @@
 #include "Triangulator.h"
 #include "Intersection.h"
 #include "TinyMath.h"
+#include "TriangleIO.h"
 #include <algorithm>
 
 
@@ -16,6 +17,9 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 	Vector2 line, bar1, bar2, tmp;
 	Vector2 intersectionPoint;
+	int step = 0;
+
+	TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++), 1024, 768, pan, NULL);
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		// Add all vertices

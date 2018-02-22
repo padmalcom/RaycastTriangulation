@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "TriangleIO.h"
 #include "Triangulator.h"
+#include "bitmap_image.hpp"
 
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <float.h>
 
 void TriangleIO::split(std::string &line, std::string &delimiter, std::vector<std::string> &strings) {
 	std::string lineCpy(line);
@@ -115,7 +117,61 @@ void TriangleIO::writeTriangle(std::string &fileName, std::vector<int> &indices,
 	}
 }
 
-void TriangleIO::triangulationStepToBitmap(std::vector<PointAndNeighbours*> *pan = NULL, ) {
+void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _height, std::vector<PointAndNeighbours*> *_pan = NULL, std::vector<EdgeVec2> *_vecs = NULL) {
 	//http://www.partow.net/programming/bitmap/index.html#simpleexample02
 
+	// If neither _pan nor _vecs specified, create dummy image
+	if (_pan == NULL && _vecs == NULL) {
+		bitmap_image image(_width, _height);
+		image.set_all_channels(255, 150, 50);
+		image.save_image(_file);
+		return;
+	}
+
+	// get min position to calculate bitmap dimensions
+	double min_x = DBL_MAX;
+	double min_y = DBL_MAX;
+	double max_x = DBL_MIN;
+	double max_y = DBL_MIN;
+
+	if (_pan != NULL) {
+		for (std::vector<PointAndNeighbours>::size_type i = 0; i < _pan->size(); i++) {
+			if (_pan->at(i)->p->x < min_x) min_x = _pan->at(i)->p->x;
+			if (_pan->at(i)->p->x > max_x) max_x = _pan->at(i)->p->x;
+			if (_pan->at(i)->p->y < min_y) min_y = _pan->at(i)->p->y;
+			if (_pan->at(i)->p->y > max_y) max_y = _pan->at(i)->p->y;
+		}
+	}
+
+	if (_vecs != NULL) {
+		for (std::vector<EdgeVec2>::size_type i = 0; i < _vecs->size(); i++) {
+			if (_vecs->at(i).a.x < min_x) min_x = _vecs->at(i).a.x;
+			if (_vecs->at(i).b.x < min_x) min_x = _vecs->at(i).b.x;
+			if (_vecs->at(i).a.x > max_x) max_x = _vecs->at(i).a.x;
+			if (_vecs->at(i).b.x > max_x) max_x = _vecs->at(i).b.x;
+
+			if (_vecs->at(i).a.y < min_y) min_y = _vecs->at(i).a.y;
+			if (_vecs->at(i).b.y < min_y) min_y = _vecs->at(i).b.y;
+			if (_vecs->at(i).a.y > max_y) max_y = _vecs->at(i).a.y;
+			if (_vecs->at(i).b.y > max_y) max_y = _vecs->at(i).b.y;
+		}
+	}
+
+	// Create image
+	bitmap_image image(max_x + abs(min_x), max_y + abs(min_y));
+	image.set_all_channels(0, 0, 0);
+
+	image_drawer draw(image);
+	draw.pen_width(3);
+	draw.pen_color(255, 0, 0);
+
+	// Draw points and neighbors
+	if (_pan != NULL) {
+		for (std::vector<PointAndNeighbours>::size_type i = 0; i < _pan->size(); i++) {
+			draw.circle(_pan->at(i)->p->x, _pan->at(i)->p->y, 3);
+		}
+	}
+
+	// Save image
+	image.save_image(_file);
 }

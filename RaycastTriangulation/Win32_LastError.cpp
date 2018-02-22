@@ -1,7 +1,9 @@
 /* See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/debug/base/formatmessage.asp */
 
+#include "stdafx.h"
 #include <windows.h>
 #include "win32_LastError.h"
+
 
 std::string Win32_LastError() {
 	LPVOID lpMsgBuf;

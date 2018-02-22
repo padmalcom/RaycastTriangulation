@@ -149,7 +149,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::vector<int> *indices = NULL;
 
 	printf("Starting triangulation ...\n");
-	Triangulator::triangulate(polygon, holes, indices, vertices, debug, outputClockwise, NULL);
+	Triangulator::triangulate(polygon, holes, indices, vertices, debug, outputClockwise, new std::string("test.avi"));
 
 	unsigned int stop = clock() - start;
 

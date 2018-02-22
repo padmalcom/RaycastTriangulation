@@ -33,3 +33,8 @@ bool TinyMath::pointInTriangle(Vector2 &point, Vector2 &a, Vector2 &b, Vector2 &
 
 	return ((b1 == b2) && (b2 == b3));
 }
+
+int TinyMath::map(int x, int in_min, int in_max, int out_min, int out_max)
+{
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}

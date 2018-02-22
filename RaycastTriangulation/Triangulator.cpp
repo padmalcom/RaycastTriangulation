@@ -19,7 +19,17 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 	Vector2 intersectionPoint;
 	int step = 0;
 
-	if (_videoFile != NULL) TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++), 1024, 768, pan, NULL);
+	std::vector<EdgeVec2> *edges = new std::vector<EdgeVec2>();
+	// Draw all neighbors in green of each point
+	if (_videoFile != NULL) {
+		for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
+			for (std::vector<PointAndNeighbours>::size_type j = 0; j < pan->at(i)->neighbours.size(); j++) {
+				edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(i)->neighbours.at(j)->p, true));
+			}
+		}
+	}
+
+	if (_videoFile != NULL) TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, NULL);
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		// Add all vertices
@@ -29,9 +39,16 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 			if (_debug) printf("Checking connection from point %i at (%f,%f) to point %i at (%f,%f).\n", i, pan->at(i)->p->x, pan->at(i)->p->y, j, pan->at(j)->p->x, pan->at(j)->p->y);
 
+			// Draw red line -> test
+			if (_videoFile != NULL) {
+				edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(j)->p, false));
+				TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, edges);
+			}
+
 			// No lines to direct neighbours
 			if (*(pan->at(j)->p) == *(pan->at(i)->next) || *(pan->at(j)->p) == *(pan->at(i)->prev)) {
 				if (_debug) printf("\tPoints %i and %i are neighbours. Continuing.\n", i, j);
+				if (_videoFile != NULL) edges->pop_back();
 				continue;
 			}
 
@@ -49,6 +66,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 				if (!Vector2::isLineInBetweenVectors(bar2, bar1, line)) {
 					if (_debug) printf("\tPoint (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
+					if (_videoFile != NULL) edges->pop_back();
 					continue;
 				}
 			}
@@ -58,22 +76,19 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			for (std::vector<PointAndNeighbours>::size_type k = 0; k < pan->size(); k++) {
 				for (std::vector<PointAndNeighbours>::size_type l = 0; l < pan->at(k)->neighbours.size(); l++) {
 
-					// Draw yellow line
-
 					if (Intersection::line_intersection(*pan->at(i)->p, *pan->at(j)->p, *pan->at(k)->p, *pan->at(k)->neighbours.at(l)->p, intersectionPoint) && !(intersectionPoint == *(pan->at(i)->p) || (intersectionPoint == *(pan->at(j)->p)))) {
 						if (_debug) {
 							printf("\t\tLine (%f,%f) -> (%f,%f) intersects with line (%f,%f)->(%f,%f) at (%f,%f).\n\n", pan->at(i)->p->x, pan->at(i)->p->y,
 								pan->at(j)->p->x, pan->at(j)->p->y, pan->at(k)->p->x, pan->at(k)->p->y, pan->at(k)->neighbours.at(l)->p->x, pan->at(k)->neighbours.at(l)->p->y,
 								intersectionPoint.x, intersectionPoint.y);
 						}
-						lineIntersects = true;
-
-						// Draw red line
-						
+						lineIntersects = true;						
 						break;
 					}
 				}
-				if (lineIntersects) break;
+				if (lineIntersects) {
+					break;
+				}
 			}
 
 			// If the current ray does not intersect with any other line, add i and j as neighbors.
@@ -83,6 +98,10 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				if (_debug) printf("\tAdding line from (%f, %f) to (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, pan->at(j)->p->x, pan->at(j)->p->y);
 
 				// Draw green line
+				edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(j)->p, true));
+			}
+			else {
+				if (_videoFile != NULL) edges->pop_back();
 			}
 		}
 	}

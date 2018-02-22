@@ -2,6 +2,7 @@
 #include "TriangleIO.h"
 #include "Triangulator.h"
 #include "bitmap_image.hpp"
+#include "TinyMath.h"
 
 #include <fstream>
 #include <string>
@@ -158,17 +159,48 @@ void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _h
 	}
 
 	// Create image
-	bitmap_image image(max_x + abs(min_x), max_y + abs(min_y));
+	//bitmap_image image(max_x + abs(min_x), max_y + abs(min_y));
+	bitmap_image image(_width, _height);
 	image.set_all_channels(0, 0, 0);
 
 	image_drawer draw(image);
 	draw.pen_width(3);
-	draw.pen_color(255, 0, 0);
 
 	// Draw points and neighbors
 	if (_pan != NULL) {
 		for (std::vector<PointAndNeighbours>::size_type i = 0; i < _pan->size(); i++) {
-			draw.circle(_pan->at(i)->p->x, _pan->at(i)->p->y, 3);
+
+			if (_pan->at(i)->holeId > -1) {
+				draw.pen_color(255, 0, 0);
+			}
+			else {
+				draw.pen_color(0, 255, 0);
+			}
+
+			int x = TinyMath::map(_pan->at(i)->p->x, min_x, max_x, 0 + (_width * 0.05f), _width * 0.9f);
+			int y = TinyMath::map(_pan->at(i)->p->y, min_y, max_y, 0 + (_height * 0.05f), _height * 0.9f);
+			draw.circle(x, y, 3);
+		}
+	}
+
+	if (_vecs != NULL) {
+		for (std::vector<EdgeVec2>::size_type i = 0; i < _vecs->size(); i++) {
+			if (_vecs->at(i).isOuter == true) {
+				// Draw green line
+				draw.pen_color(0, 255, 0);
+			}
+			else {
+				// Draw red line
+				draw.pen_color(255, 0, 0);
+			}
+
+			int x1 = TinyMath::map(_vecs->at(i).a.x, min_x, max_x, 0 + (_width * 0.05f), _width * 0.9f);
+			int y1 = TinyMath::map(_vecs->at(i).a.y, min_y, max_y, 0 + (_height * 0.05f), _height * 0.9f);
+			int x2 = TinyMath::map(_vecs->at(i).b.x, min_x, max_x, 0 + (_width * 0.05f), _width * 0.9f);
+			int y2 = TinyMath::map(_vecs->at(i).b.y, min_y, max_y, 0 + (_height * 0.05f), _height * 0.9f);
+
+			draw.line_segment(x1, y1, x2, y2);
+
 		}
 	}
 

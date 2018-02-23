@@ -3,6 +3,7 @@
 #include "Triangulator.h"
 #include "bitmap_image.hpp"
 #include "TinyMath.h"
+#include "Triangle.h"
 
 #include <fstream>
 #include <string>
@@ -118,7 +119,8 @@ void TriangleIO::writeTriangle(std::string &fileName, std::vector<int> &indices,
 	}
 }
 
-void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _height, std::vector<PointAndNeighbours*> *_pan, std::vector<EdgeVec2> *_vecs) {
+void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _height, std::vector<PointAndNeighbours*> *_pan, std::vector<EdgeVec2> *_vecs,
+	std::vector<Triangle> *_triangles) {
 	//http://www.partow.net/programming/bitmap/index.html#simpleexample02
 
 	// If neither _pan nor _vecs specified, create dummy image
@@ -144,22 +146,7 @@ void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _h
 		}
 	}
 
-	if (_vecs != NULL) {
-		for (std::vector<EdgeVec2>::size_type i = 0; i < _vecs->size(); i++) {
-			if (_vecs->at(i).a.x < min_x) min_x = _vecs->at(i).a.x;
-			if (_vecs->at(i).b.x < min_x) min_x = _vecs->at(i).b.x;
-			if (_vecs->at(i).a.x > max_x) max_x = _vecs->at(i).a.x;
-			if (_vecs->at(i).b.x > max_x) max_x = _vecs->at(i).b.x;
-
-			if (_vecs->at(i).a.y < min_y) min_y = _vecs->at(i).a.y;
-			if (_vecs->at(i).b.y < min_y) min_y = _vecs->at(i).b.y;
-			if (_vecs->at(i).a.y > max_y) max_y = _vecs->at(i).a.y;
-			if (_vecs->at(i).b.y > max_y) max_y = _vecs->at(i).b.y;
-		}
-	}
-
 	// Create image
-	//bitmap_image image(max_x + abs(min_x), max_y + abs(min_y));
 	bitmap_image image(_width, _height);
 	image.set_all_channels(0, 0, 0);
 
@@ -201,6 +188,20 @@ void TriangleIO::triangulationStepToBitmap(std::string _file, int _width, int _h
 
 			draw.line_segment(x1, y1, x2, y2);
 
+		}
+	}
+
+	if (_triangles != NULL) {
+		for (std::vector<Triangle>::size_type i = 0; i < _triangles->size(); i++) {
+			draw.pen_color(0, 0, 255);
+			int x1 = TinyMath::map(_triangles->at(i).a.x, min_x, max_x, 0 + (_width * 0.05f), _width * 0.9f);
+			int y1 = TinyMath::map(_triangles->at(i).a.y, min_y, max_y, 0 + (_height * 0.05f), _height * 0.9f);
+			int x2 = TinyMath::map(_triangles->at(i).b.x, min_x, max_x, 0 + (_width * 0.05f), _width * 0.9f);
+			int y2 = TinyMath::map(_triangles->at(i).b.y, min_y, max_y, 0 + (_height * 0.05f), _height * 0.9f);
+			int x3 = TinyMath::map(_triangles->at(i).c.x, min_x, max_x, 0 + (_width * 0.05f), _width * 0.9f);
+			int y3 = TinyMath::map(_triangles->at(i).c.y, min_y, max_y, 0 + (_height * 0.05f), _height * 0.9f);
+
+			draw.triangle(x1, y1, x2, y2, x3, y3);
 		}
 	}
 

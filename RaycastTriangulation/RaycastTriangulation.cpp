@@ -23,10 +23,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	std::string input("");
 	std::string output("");
+	std::string video("");
 	bool circle = false;
 	int circleCount = -1;
 	bool debug = false;
 	bool outputClockwise = true;
+
 	for (int i = 0; i < argc; i++) {
 		std::wstring wtype(argv[i]);
 		std::string value(wtype.begin(), wtype.end());
@@ -40,6 +42,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			printf("-cc: circle point count (must be larger at least 3).\n");
 			printf("-f: output format(required, 'list' or array')\n");
 			printf("-d: debug output\n");
+			printf("-v: video file to output the triangulation process.\n");
 			return 0;
 		}
 	}
@@ -61,6 +64,14 @@ int _tmain(int argc, _TCHAR* argv[])
 				i++;
 				output = arguments.at(i);
 				printf("Output is %s.\n", output.c_str());
+			}
+		}
+		// Get video file
+		else if (arguments.at(i) == "-v") {
+			if (i < arguments.size() - 1) {
+				i++;
+				video = arguments.at(i);
+				printf("Rendering process to video file %s.\n", video.c_str());
 			}
 		}
 		// Output format
@@ -149,7 +160,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::vector<int> *indices = NULL;
 
 	printf("Starting triangulation ...\n");
-	Triangulator::triangulate(polygon, holes, indices, vertices, debug, outputClockwise, new std::string("test.avi"));
+	Triangulator::triangulate(polygon, holes, indices, vertices, debug, outputClockwise, video);
 
 	unsigned int stop = clock() - start;
 

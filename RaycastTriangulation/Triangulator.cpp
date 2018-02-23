@@ -4,10 +4,13 @@
 #include "TinyMath.h"
 #include "TriangleIO.h"
 #include <algorithm>
+#include <windows.h>
+#include "avi_utils.h"
+//#include <Vfw.h>
 
 
 void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::vector<Vector2>*> &holes, std::vector<int> *&indices, std::vector<Vector2> *&vertices,
-	bool _debug, bool _clockwise, std::string *_videoFile)
+	bool _debug, bool _clockwise, std::string _videoFile)
 {
 	std::vector<PointAndNeighbours*> *pan = Triangulator::createPointsAndNeighbours(polygon, holes);
 	vertices = new std::vector<Vector2>();	
@@ -21,7 +24,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 	std::vector<EdgeVec2> *edges = new std::vector<EdgeVec2>();
 	// Draw all neighbors in green of each point
-	if (_videoFile != NULL) {
+	if (!_videoFile.empty()) {
 		for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 			for (std::vector<PointAndNeighbours>::size_type j = 0; j < pan->at(i)->neighbours.size(); j++) {
 				edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(i)->neighbours.at(j)->p, true));
@@ -29,7 +32,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 		}
 	}
 
-	if (_videoFile != NULL) TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, NULL);
+	if (!_videoFile.empty()) TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, NULL, NULL);
 	for (std::vector<PointAndNeighbours>::size_type i = 0; i < pan->size(); i++) {
 
 		// Add all vertices
@@ -40,15 +43,15 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 			if (_debug) printf("Checking connection from point %i at (%f,%f) to point %i at (%f,%f).\n", i, pan->at(i)->p->x, pan->at(i)->p->y, j, pan->at(j)->p->x, pan->at(j)->p->y);
 
 			// Draw red line -> test
-			if (_videoFile != NULL) {
+			if (!_videoFile.empty()) {
 				edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(j)->p, false));
-				TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, edges);
+				TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, edges, NULL);
 			}
 
 			// No lines to direct neighbours
 			if (*(pan->at(j)->p) == *(pan->at(i)->next) || *(pan->at(j)->p) == *(pan->at(i)->prev)) {
 				if (_debug) printf("\tPoints %i and %i are neighbours. Continuing.\n", i, j);
-				if (_videoFile != NULL) edges->pop_back();
+				if (!_videoFile.empty()) edges->pop_back();
 				continue;
 			}
 
@@ -58,15 +61,17 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				bar1 = *pan->at(i)->prev - *pan->at(i)->p;
 				bar2 = *pan->at(i)->next - *pan->at(i)->p;
 
-				if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) {
-					tmp = bar1;
-					bar1 = bar2;
-					bar2 = tmp;
+				if (pan->at(i)->holeId == -1) {
+					if (TinyMath::crossProductZ(bar1, bar2) > 0.0f) {
+						tmp = bar1;
+						bar1 = bar2;
+						bar2 = tmp;
+					}
 				}
 
 				if (!Vector2::isLineInBetweenVectors(bar2, bar1, line)) {
 					if (_debug) printf("\tPoint (%f,%f): Line (%f,%f) is not between points (%f,%f) and (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, line.x, line.y, bar1.x, bar1.y, bar2.x, bar2.y);
-					if (_videoFile != NULL) edges->pop_back();
+					if (!_videoFile.empty()) edges->pop_back();
 					continue;
 				}
 			}
@@ -98,12 +103,17 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 				if (_debug) printf("\tAdding line from (%f, %f) to (%f,%f).\n", pan->at(i)->p->x, pan->at(i)->p->y, pan->at(j)->p->x, pan->at(j)->p->y);
 
 				// Draw green line
-				edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(j)->p, true));
+				if (!_videoFile.empty()) edges->push_back(EdgeVec2(*pan->at(i)->p, *pan->at(j)->p, true));
 			}
 			else {
-				if (_videoFile != NULL) edges->pop_back();
+				if (!_videoFile.empty()) edges->pop_back();
 			}
 		}
+	}
+
+	// Draw final state
+	if (!_videoFile.empty()) {
+		TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, edges, NULL);
 	}
 
 	if (_debug) {
@@ -117,6 +127,7 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 	int p1, p2, p3;
 	bool pointInTris = false;
+	std::vector<Triangle> *triangles = new std::vector<Triangle>();
 
 	if (_debug) printf("\n\nStarting to collect triangles.\n\n");
 
@@ -196,6 +207,11 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 
 							if (!containsTriangle(*indices, p1, p2, p3, _clockwise)) {
 
+								if (!_videoFile.empty()) {
+									triangles->push_back(Triangle(vertices->at(p1), vertices->at(p2), vertices->at(p3)));
+									TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, edges, triangles);
+								}
+
 								if (_clockwise) {
 									indices->push_back(p1);
 									indices->push_back(p2);
@@ -218,6 +234,35 @@ void Triangulator::triangulate(std::vector<Vector2> &polygon, std::vector<std::v
 					}
 				}
 			}
+		}
+	}
+
+	// Draw the final bitmap
+	if (!_videoFile.empty()) {
+		TriangleIO::triangulationStepToBitmap("img" + std::to_string(step++) + ".bmp", 1024, 768, pan, edges, triangles);
+	}
+
+	if (!_videoFile.empty()) {
+		HAVI avi = CreateAvi(_videoFile.c_str(), 1000, NULL); // 1000ms is the period between frames
+		if (avi == NULL && _debug) {
+			printf("Could not initialize avi file.\n");
+		}
+		for (int i = 0; i<step; i++)
+		{
+			HBITMAP hbm = (HBITMAP)LoadImage(NULL, GetWC(("img" + std::to_string(i) + ".bmp").c_str()), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+			if (AddAviFrame(avi, hbm) != S_OK && _debug) {
+				printf("Could not add frame %d.\n", i);
+			}
+
+			// Add the last frame 3 times
+			if (i == step - 1) {
+				AddAviFrame(avi, hbm);
+				AddAviFrame(avi, hbm);
+			}
+			DeleteObject(hbm);
+		}
+		if (CloseAvi(avi) != S_OK && _debug) {
+			printf("Could not close avi.\n");
 		}
 	}
 }
